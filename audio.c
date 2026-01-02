@@ -196,9 +196,11 @@ void setup_from_config(float* eq,float* release,char* file){
         char* r_val = get_value_by(cfg,"release",val);
         if(e_val){
             eq[i] = atof(e_val);
+            printf("eq %d: %f\n",i,eq[i]);
         }
         if(r_val){
             release[i] = atof(r_val);
+            printf("release %d: %.10f\n",i,release[i]);
         }
 
     }
@@ -270,7 +272,7 @@ int main(int argn,char* argv[]){
     */
 
     //default setting for eq 9 bins
-    if(bins == 9){
+    /*if(bins == 9){
         pre_eq[0]=0.005;
         pre_eq[1]=0.2;
         pre_eq[2]=0.7;
@@ -283,7 +285,7 @@ int main(int argn,char* argv[]){
         //release settings:
         l_release[0]=0.0000001;
         l_release[1]=0.0001;
-    }
+    }*/
     //user setting eq and release
     if(argn >= 2){
         setup_from_config(eq,l_release,argv[1]);
