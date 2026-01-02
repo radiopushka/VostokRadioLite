@@ -7,4 +7,4 @@
 - **Download**: ```git clone https://github.com/radiopushka/VostokRadioLite```
 - **Compilation**: ```cd VostokRadioLite``` then ```make```
 - **Installation**: ```cp ./vtkradio /usr/bin``` or where ever you want to put it.
-- **Configuration**: the provided sample_cfg file contains all the configuration options available, pass it to vtkradio: ```vtkradio ./sample_cfg``` and it will show you the active configuration.
+- **Configuration**: the sample_cfg file has all the configuration options available, pass it to vtkradio: ```vtkradio ./sample_cfg``` and it will show you the active configuration.
