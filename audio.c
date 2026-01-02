@@ -20,6 +20,8 @@ const float int_value = 2147483647.0;
 //user settings:
 float pilot_amp = 0.15;
 int OF_bins = 1;
+int c1_MPX = 1;
+int c2_MPX = 1;
 //post AGC limiter amp and image spectral limiter
 float pre_amp = 0.7;
 float post_amp =  1;
@@ -92,6 +94,18 @@ void setup_globals_from_config(char* file){
         OF_bins = atof(OF_bins_f);
         printf("Orthogonal(to 19 khz pilot) Frequency bins: %d\n",OF_bins);
     }
+
+    char* c1_mpx_f = get_value_by(cfg,"MPX","c1_mpx");
+    if(c1_mpx_f){
+        c1_MPX = atof(c1_mpx_f);
+        printf("channel 1 MPX: %d\n",c1_MPX);
+    }
+    char* c2_mpx_f = get_value_by(cfg,"MPX","c2_mpx");
+    if(c2_mpx_f){
+        c2_MPX = atof(c2_mpx_f);
+        printf("channel 1 MPX: %d\n",c2_MPX);
+    }
+
 
 
     //limiter
@@ -385,14 +399,14 @@ int main(int argn,char* argv[]){
         float limit_audio = (1-pilot_amp);
         float pilot_v = pilot_amp*int_value;
         for(int i = 0;i<half_b;i++){
-            float mono = *i_mb;
+            float mono_i = *i_mb;
             float stereo = *i_sb;
             i_mb++;i_sb++;
 
             float stereo_val = stereo*stereo_ratio;
             float headroom = int_value - fabs(stereo_val);
             float ratio_mono = headroom/int_value;
-            mono = mono*ratio_mono;
+            float mono = mono_i*ratio_mono;
             stereo = stereo_val;
 
 
@@ -404,9 +418,15 @@ int main(int argn,char* argv[]){
 
                 float sample = w19*pilot_v+(w38*stereo+mono)*limit_audio;
                 //float sample = stereo+mono;
-                *oi = sample;
+                if(c1_MPX)
+                    *oi = sample;
+                else
+                    *oi = mono_i;
                 oi++;
-                *oi = sample;
+                if(c2_MPX)
+                    *oi = sample;
+                else
+                    *oi = mono_i;
                 oi++;
                 mpx_count++;
                 if(mpx_count >= mpx_b)
