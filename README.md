@@ -24,12 +24,12 @@ oface=default
 [MPX]
 pilot_amp=0.15
 stereo_ratio=0.3
-negmod=0.01
+negmod=-0.02
 c1_mpx=1
 c2_mpx=1
 ```
 - This section contains the percentage of the pilot tone with respect to the signal(pilot_amp), the percentage of the 38khz modulation with respect to the signal(stereo_ratio).
-- It also contains (negmod) which provides negative amplitude modulation of the pilot tone if the sound card or anything outside modulates the pilot tone, causing annoying ultrasonic artifacts in the audio. Set it to a negative value for positive modulation.
+- It also contains (negmod) which provides negative amplitude modulation of the pilot tone if the sound card or anything outside modulates the pilot tone, causing annoying ultrasonic artifacts in the audio. Set it to a negative value for positive modulation. This is a problem with the DAC+, the PI DAC+ contains an onboard headphone amplifier which draws current from the local power rail. Hence, it affects the amplitude of all outputs and causes negative pilot tone modulation. This parameter is to compensate for it. 
 - The (c1_mpx) and (c2_mpx) fields specify whether to use the right or left channel or both for MPX instead of mono audio.
 ### Limiter Section
 ```
