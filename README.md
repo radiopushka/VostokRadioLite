@@ -24,7 +24,7 @@ oface=default
 [MPX]
 pilot_amp=0.15
 stereo_ratio=0.3
-negmod=0.0003
+negmod=0.0
 c1_mpx=1
 c2_mpx=1
 ```
