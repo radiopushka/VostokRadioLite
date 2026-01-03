@@ -24,7 +24,7 @@ oface=default
 [MPX]
 pilot_amp=0.15
 stereo_ratio=0.3
-OF_bins=1
+OF_bins=0
 c1_mpx=1
 c2_mpx=1
 ```
@@ -85,5 +85,5 @@ boost=0.4
 ```
 - The limiter has a special attack method, but setting the release values to low values can help with frequencies that sound too clipped.
 
-
+# System Requirements
 
