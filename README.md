@@ -1,5 +1,5 @@
 # FM/AM Broadcast Processor and Audio Maximizer for Edge Devices, specifically for Raspberry Pi.
-## 94-100% single core utilization with the provided settings on the Raspberry Pi Zero W 
+## 96% single core utilization with the provided settings on the Raspberry Pi Zero W 
 ## For use with the RPI DAC+ module https://www.raspberrypi.com/products/dac-plus/
 
 
