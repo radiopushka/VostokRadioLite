@@ -40,6 +40,7 @@ post_amp=1
 limit=3.5e+9
 save_harmonics=0.8
 bins=9
+basscut=220
 ```
 - (pre_amp) specifies the pre-amp constant of the incoming audio before the agc(the agc comes before the complex limiter)
 - (lookahead) specifies how many samples to process for each FFT coefficient transition inside the limiter(basically, lookahead like a regular limiter)
@@ -47,6 +48,7 @@ bins=9
 - (limit) specifies the maximum of the sum of amplitudes of all the frequency bins in the limiter.
 - (save_harmonics) say if 1khz is really loud and everything else is quiet, setting this to a low value will bring the quiet part up and limit 1khz, setting to a high value will do the opposite. Be careful setting this to a low value.
 - (bins) the number of bins to split the frequency range of 1 - 16 khz in to. only values 5,9,15,30,45 are accepted. higher values will give less of a "sound through the tube" effect but will require more processing power.
+- (basscut) cuts off bass before the limiter (for transmitters that are not able to properly transmit bass)
 ### AGC section
 ```
 [agc]
