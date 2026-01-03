@@ -19,7 +19,7 @@ const float int_value = 2147483647.0;
 //
 //user settings:
 float pilot_amp = 0.15;
-float neg_mod = 0.0005;
+float neg_mod = 0.0;
 int c1_MPX = 1;
 int c2_MPX = 1;
 //post AGC limiter amp and image spectral limiter
