@@ -19,7 +19,7 @@ const float int_value = 2147483647.0;
 //
 //user settings:
 float pilot_amp = 0.15;
-int OF_bins = 1;
+float neg_mod = 0.0005;
 int c1_MPX = 1;
 int c2_MPX = 1;
 //post AGC limiter amp and image spectral limiter
@@ -89,10 +89,10 @@ void setup_globals_from_config(char* file){
         stereo_ratio = atof(stereo_ratio_f);
         printf("stereo ratio: %f\n",stereo_ratio);
     }
-    char* OF_bins_f = get_value_by(cfg,"MPX","OF_bins");
-    if(OF_bins_f){
-        OF_bins = atof(OF_bins_f);
-        printf("Orthogonal(to 19 khz pilot) Frequency bins: %d\n",OF_bins);
+    char* negmod_f = get_value_by(cfg,"MPX","negmod");
+    if(negmod_f){
+        neg_mod = atof(negmod_f);
+        printf("pilot tone negative modulation: %f\n",neg_mod);
     }
 
     char* c1_mpx_f = get_value_by(cfg,"MPX","c1_mpx");
@@ -292,8 +292,8 @@ int main(int argn,char* argv[]){
     }
 
     //FFT resampling mono
-    struct FFT_rsmp *rsmp = FFT_resample_init(bins,OF_bins,lookahead, 1000, 16000, rate1);
-    struct FFT_rsmp *rsmp_st = FFT_resample_init(bins,OF_bins,lookahead, 1000, 16000, rate1);
+    struct FFT_rsmp *rsmp = FFT_resample_init(bins,lookahead, 1000, 16000, rate1);
+    struct FFT_rsmp *rsmp_st = FFT_resample_init(bins,lookahead, 1000, 16000, rate1);
     //gain controller
     struct Gain_Control *gc = gain_control_init(attack,release,target,noise_th);
 
@@ -411,14 +411,15 @@ int main(int argn,char* argv[]){
             float mono = mono_i*ratio_mono;
             stereo = stereo_val;
 
-
+            float nmod = mono*neg_mod;
+            float p_amp = (pilot_v-nmod);
 
             //put 8 samples for 192 khz
             for(int i2 = 0;i2<4;i2++){
                 float w38 = synth_38[mpx_count];
                 float w19 = synth_19[mpx_count];
 
-                float sample = w19*pilot_v+(w38*stereo+mono)*limit_audio;
+                float sample = w19*p_amp+(w38*stereo+mono)*limit_audio;
                 //float sample = stereo+mono;
                 if(c1_MPX)
                     *oi = sample;
