@@ -24,12 +24,12 @@ oface=default
 [MPX]
 pilot_amp=0.15
 stereo_ratio=0.3
-OF_bins=0
+negmod=0.0003
 c1_mpx=1
 c2_mpx=1
 ```
 - This section contains the percentage of the pilot tone with respect to the signal(pilot_amp), the percentage of the 38khz modulation with respect to the signal(stereo_ratio).
-- It also contains (OF_bins) which specifies how many frequencies from the top of the audio band (16khz) to limit the amplitude of waveforms that are non-orthogonal to the stereo pilot tone. This can improve stereo separation and reduce distortion but can also add distortion.
+- It also contains (negmod) which provides negative amplitude modulation of the pilot tone if the sound card or anything outside modulates the pilot tone, causing annoying ultrasonic artifacts in the audio. Set it to a negative value for positive modulation.
 - The (c1_mpx) and (c2_mpx) fields specify whether to use the right or left channel or both for MPX instead of mono audio.
 ### Limiter Section
 ```
