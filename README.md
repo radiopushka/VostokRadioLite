@@ -86,4 +86,8 @@ boost=0.4
 - The limiter has a special attack method, but setting the release values to low values can help with frequencies that sound too clipped.
 
 # System Requirements
+- **Raspberry PI Zero W V1.1 Minimum, but Raspberry PI Zero 2 W recommended for the ability to use scp and file transfer**
+- **Alpine Linux for the PI Zero W 1 since we will use nearly 100% of all resources**
+- **The DAC mentioned in the title**
+- **An FM transmitter that has a flat frequency response from 0Hz to 57khz (you can get away with poor bass response, but not recommended).**
 
