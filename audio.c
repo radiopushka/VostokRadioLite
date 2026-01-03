@@ -22,6 +22,7 @@ float pilot_amp = 0.15;
 float neg_mod = 0.0;
 int c1_MPX = 1;
 int c2_MPX = 1;
+float bass_cut = 80.0f;
 //post AGC limiter amp and image spectral limiter
 float pre_amp = 0.7;
 float post_amp =  1;
@@ -114,6 +115,12 @@ void setup_globals_from_config(char* file){
         pre_amp = atof(pre_amp_f);
         printf("pre amp: %f\n",pre_amp);
     }
+    char* bass_cut_f = get_value_by(cfg,"limiter","basscut");
+    if(bass_cut_f){
+        bass_cut = atof(bass_cut_f);
+        printf("pre limiter bass cut(Hz): %f\n",bass_cut);
+    }
+
     char* lookahead_f = get_value_by(cfg,"limiter","lookahead");
     if(lookahead_f){
         lookahead = atoi(lookahead_f);
@@ -292,8 +299,8 @@ int main(int argn,char* argv[]){
     }
 
     //FFT resampling mono
-    struct FFT_rsmp *rsmp = FFT_resample_init(bins,lookahead, 1000, 16000, rate1);
-    struct FFT_rsmp *rsmp_st = FFT_resample_init(bins,lookahead, 1000, 16000, rate1);
+    struct FFT_rsmp *rsmp = FFT_resample_init(bins,lookahead, 1000, 16000,bass_cut, rate1);
+    struct FFT_rsmp *rsmp_st = FFT_resample_init(bins,lookahead, 1000, 16000,bass_cut, rate1);
     //gain controller
     struct Gain_Control *gc = gain_control_init(attack,release,target,noise_th);
 

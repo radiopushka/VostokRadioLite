@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 
-struct FFT_rsmp *FFT_resample_init(int bins,int ring_buffer_delay, float fs, float fend,float srate){
+struct FFT_rsmp *FFT_resample_init(int bins,int ring_buffer_delay, float fs, float fend,float bass_cut,float srate){
     struct FFT_rsmp *rsmp = malloc(sizeof(struct FFT_rsmp));
     float freq_pbin = (fend-fs)/((float)bins);
     rsmp->alpha = freq_pbin/srate;
@@ -15,7 +15,7 @@ struct FFT_rsmp *FFT_resample_init(int bins,int ring_buffer_delay, float fs, flo
 
     int fft_buff_len = srate+240;//prevent clicking so that all synthesized signals are being sampled
 
-    rsmp->hpf_alpha = (10.0f)/srate;//10hz high pass
+    rsmp->hpf_alpha = (bass_cut)/srate;//10hz high pass
     rsmp->hpf_nalpha = 1-rsmp->hpf_alpha;
 
     //how many bins starting from the top of the band are resampled orthogonally to the MPX signals
