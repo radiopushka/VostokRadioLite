@@ -16,9 +16,9 @@ save_harmonics=0.8
 bins=9
 [agc]
 attack=0.06
-release=0.003
+release=0.004
 target=6.2e+9
-noise_th=2e+6
+noise_th=4e+6
 [highpass]
 alpha=0.0083333
 [bassboost]
