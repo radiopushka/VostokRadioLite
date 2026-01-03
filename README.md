@@ -90,4 +90,8 @@ boost=0.4
 - **Alpine Linux for the PI Zero W 1 since we will use nearly 100% of all resources**
 - **The DAC mentioned in the title**
 - **An FM transmitter that has a flat frequency response from 0Hz to 57khz (you can get away with poor bass response, but not recommended).**
+# Miscellaneous
+
+<img width="1919" height="1170" alt="2026-01-03_11-10" src="https://github.com/user-attachments/assets/0cb2f167-af1f-46ef-934a-ecf5c1270427" />
+<img width="1919" height="1173" alt="2026-01-03_11-10_1" src="https://github.com/user-attachments/assets/bbde4e22-ff32-4288-bc5a-d776d51e0d5e" />
 
