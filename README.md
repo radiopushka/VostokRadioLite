@@ -9,6 +9,7 @@
 - **Compilation**: simply run ```make```
 - **Installation**: ```cp ./vtkradio /usr/bin``` or where ever you want to put it.
 - **Configuration**: the sample_cfg file has all the configuration options available, pass it to vtkradio: ```vtkradio ./sample_cfg``` and it will show you the active configuration.
+- **Setup**: if you are getting constant overflow or underflow errors, you might have to overclock/underclock, trim the DAC+ clock via alsamixer, so that the two oscillators are in sync.
 
 ## Configuration file guide
 - **The configuration file format expects no spaces between the key, the equals sign, and the value.**
