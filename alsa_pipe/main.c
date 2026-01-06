@@ -126,8 +126,17 @@ int forward_audio(){
   return 1;
 }
 
+char playback_iface_v[32];
 void* audio_thread_cont(void* arg){
   pthread_detach(pthread_self());
+  snd_pcm_open(&output, playback_iface_v,SND_PCM_STREAM_PLAYBACK, 0);
+
+ unsigned int output_rate=rate;
+ int channels=2;
+ configure_sound_card(output,forward_buffer_size*STEP_BACK,(unsigned int*)&output_rate,&channels,SND_PCM_FORMAT_S32_LE);
+
+ snd_pcm_prepare(output);
+
   int status=0;
   while(status!=-1&&de_signal!=1){
     status=forward_audio();
@@ -226,27 +235,35 @@ int setup_alsa_pipe(char* recording_iface, char* playback_iface, int* channels_i
 
   //alsa stuff
 
-	if ( snd_pcm_open(&output, playback_iface,SND_PCM_STREAM_PLAYBACK, 0) < 0){
-		printf("unable to open playback interface\n");
-		return -1;
-	}
   if ( snd_pcm_open(&input, recording_iface,SND_PCM_STREAM_CAPTURE, 0) < 0){
 		printf("unable to open recording interface\n");
 		return -1;
 	}
 
-	if(configure_sound_card(output,forward_buffer_size*STEP_BACK,(unsigned int*)output_rate,channels_out,SND_PCM_FORMAT_S32_LE)<0){
-    printf("play config failed \n");
+	if ( snd_pcm_open(&output, playback_iface,SND_PCM_STREAM_PLAYBACK, 0) < 0){
+		printf("unable to open playback interface\n");
 		return -1;
 	}
 	if(configure_sound_card(input,forward_buffer_size*STEP_BACK,(unsigned int*)input_rate,channels_in,SND_PCM_FORMAT_S32_LE)<0){
     printf("record config failed \n");
 		return -1;
 	}
+    //check all parameters
+	if(configure_sound_card(output,forward_buffer_size*STEP_BACK,(unsigned int*)output_rate,channels_out,SND_PCM_FORMAT_S32_LE)<0){
+    printf("play config failed \n");
+		return -1;
+	}
+
+    sprintf(playback_iface_v,"%s",playback_iface);
 
   rate = *output_rate;
-	snd_pcm_prepare(output);
 	snd_pcm_prepare(input);
+
+    //free this output and create it again in the separate thread
+    //hack to fix alsa bugs
+    snd_pcm_hw_free(output);
+    snd_pcm_close(output);
+
 
   output_channels=*channels_out;
   input_channels=*channels_in;
