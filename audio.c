@@ -340,12 +340,16 @@ int main(int argn,char* argv[]){
         printf("started main thread\n");
     }
 
+    printf("rate1: %d rate2: %d\n",rate1,rate2);
 
 
     int mpx_count = 0;
     while(1){
 
         if(get_audio(recbuff,i_buffer_size)== -1){
+	    printf("WARNING: snd-aloop is bugged on your system, switch to the buffer file instead\n");
+	    printf("specify the path to the buffer file as iface= parameter in the audio config\n");
+	    printf("until Alpine Linux fixes the snd-aloop bug\n");
             continue;
         }
 

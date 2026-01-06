@@ -99,6 +99,7 @@ int forward_audio(){
     return 1;
   }
   if(data_in_buff>=sink_back && sink_state==1){
+    printf("underflow re synced\n");
     //snd_pcm_drain(output);
     sink_state=0;
   }
@@ -136,6 +137,7 @@ void* audio_thread_cont(void* arg){
  configure_sound_card(output,forward_buffer_size*STEP_BACK,(unsigned int*)&output_rate,&channels,SND_PCM_FORMAT_S32_LE);
 
  snd_pcm_prepare(output);
+ snd_pcm_link(input,output);
 
   int status=0;
   while(status!=-1&&de_signal!=1){
@@ -155,8 +157,9 @@ int queue_audio(int* data){
   if(queue_overflow==1){
     if(data_in_buffer <= start_drop){
       queue_overflow=0;
-      //printf("overflow\n");
+      printf("overflow\n");
     }else{
+      printf("overflow discard\n");
       pthread_mutex_unlock(&write_access);
       return 1;
     }
