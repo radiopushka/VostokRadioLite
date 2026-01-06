@@ -81,6 +81,12 @@ void setup_globals_from_config(char* file){
     printf("read config\n");
     printf("playback: %s, rec: %s\n",playback,recording);
 
+    //clock tunning
+    char* sample_f = get_value_by(cfg,"audio","discard_samples");
+    if(sample_f){
+        discard_samples = atoi(sample_f)*2;
+        printf("sample discard: %d\n",discard_samples/2);
+    }
     //MPX settings
     char* pilot_amp_f = get_value_by(cfg,"MPX","pilot_amp");
     if(pilot_amp_f){
@@ -240,7 +246,7 @@ int main(int argn,char* argv[]){
 
     int* recbuff = malloc(sizeof(int)*i_buffer_size);
     int* recbuff_end = recbuff+i_buffer_size;
-    memset(recbuff,0, sizeof(int)*i_buffer_size);
+    memset(recbuff,0, sizeof(int)*(i_buffer_size+discard_samples));
     float* midbuff_m = malloc(sizeof(float)*half_b);
     float* midbuff_s = malloc(sizeof(float)*half_b);
     memset(midbuff_m,0,sizeof(float)*half_b);
@@ -452,16 +458,6 @@ int main(int argn,char* argv[]){
             }
         }
         status = queue_audio(output);
-        if(status ==  2){//overflow
-            discard_samples = discard_samples+2;
-            if(discard_samples>10){
-                discard_samples=10;
-            }else{
-                printf("adjusting sample discarding: %d per channel\n",discard_samples>>1);
-                free(recbuff);
-                recbuff = malloc(sizeof(int)*(i_buffer_size+discard_samples));
-            }
-        }
 
 
 

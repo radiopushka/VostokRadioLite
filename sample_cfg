@@ -1,6 +1,7 @@
 [audio]
 iface=default
 oface=default
+discard_samples=0
 [MPX]
 pilot_amp=0.15
 stereo_ratio=0.3
