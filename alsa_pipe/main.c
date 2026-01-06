@@ -161,20 +161,20 @@ int queue_audio(int* data){
     }else{
       printf("overflow discard\n");
       pthread_mutex_unlock(&write_access);
-      return 1;
+      return 2;
     }
   }
   if(buffer_space<data_in_buffer){
     pthread_mutex_unlock(&write_access);
     queue_overflow=1;
-    return -1;
+    return 2;
   }
 
   if(start_point==0){
 
     queue_overflow=1;
     pthread_mutex_unlock(&write_access);
-    return 1;
+    return 2;
 
   }
   //printf("%d %d\n",start_point,forward_buffer_size*SINK_BACK);

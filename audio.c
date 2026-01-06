@@ -56,6 +56,9 @@ float bhpv_l = 0;
 float bhpv_r = 0;
 float bass_boost = 0.4;
 float nbass_boost;
+
+//sample rate tunning
+int discard_samples = 0;
 //so that we can call this later from a gui
 void pre_set_settings(){
     nalpha = 1-alpha;
@@ -346,12 +349,19 @@ int main(int argn,char* argv[]){
     int mpx_count = 0;
     while(1){
 
-        if(get_audio(recbuff,i_buffer_size)== -1){
-	    printf("WARNING: snd-aloop is bugged on your system, switch to the buffer file instead\n");
-	    printf("specify the path to the buffer file as iface= parameter in the audio config\n");
-	    printf("until Alpine Linux fixes the snd-aloop bug\n");
-            continue;
+        int status = get_audio(recbuff,i_buffer_size+discard_samples);
+        if(status ==  2){//overflow
+            discard_samples = discard_samples+2;
+            if(discard_samples>10){
+                discard_samples=10;
+            }else{
+                printf("adjusting sample discarding: %d per channel\n",discard_samples>>1);
+                free(recbuff);
+                recbuff = malloc(sizeof(int)*(i_buffer_size+discard_samples));
+            }
         }
+
+
 
         //break the stereo signal into the L+R and L-R buffers
         float* i_mb = midbuff_m;
