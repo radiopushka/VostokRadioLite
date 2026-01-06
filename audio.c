@@ -244,9 +244,9 @@ int main(int argn,char* argv[]){
     int i_buffer_size = rate1/input_buffer_prop;
     int half_b = i_buffer_size/2;
 
-    int* recbuff = malloc(sizeof(int)*i_buffer_size);
+    int* recbuff = malloc(sizeof(int)*(i_buffer_size+discard_samples));
     int* recbuff_end = recbuff+i_buffer_size;
-    memset(recbuff,0, sizeof(int)*(i_buffer_size+discard_samples));
+    memset(recbuff,0, sizeof(int)*(i_buffer_size));
     float* midbuff_m = malloc(sizeof(float)*half_b);
     float* midbuff_s = malloc(sizeof(float)*half_b);
     memset(midbuff_m,0,sizeof(float)*half_b);
