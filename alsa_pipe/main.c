@@ -86,7 +86,7 @@ int forward_audio(){
   data_in_buff=data_in_buffer;
   //start to drop frames if buffer is close to underflowing
   //buffer underflow
-  if((data_in_buff<step_back && sink_state==0)||(data_in_buff>sink_back && sink_state==1)){
+  if((data_in_buff<step_back && sink_state==0)||(data_in_buff<sink_back && sink_state==1)){
 
 
     pthread_mutex_unlock(&write_access);
