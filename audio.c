@@ -244,7 +244,14 @@ int main(int argn,char* argv[]){
     int i_buffer_size = rate1/input_buffer_prop;
     int half_b = i_buffer_size/2;
 
-    int* recbuff = malloc(sizeof(int)*(i_buffer_size+discard_samples));
+    float ratio = ((float)((i_buffer_size+discard_samples)/2.0f))/((float)(i_buffer_size/2.0f));
+
+
+    int* sample_buff = malloc(sizeof(int)*(i_buffer_size+discard_samples));
+    memset(sample_buff,0, sizeof(int)*(i_buffer_size+discard_samples));
+    int samp_size = i_buffer_size+discard_samples;
+
+    int* recbuff = malloc(sizeof(int)*(i_buffer_size));
     int* recbuff_end = recbuff+i_buffer_size;
     memset(recbuff,0, sizeof(int)*(i_buffer_size));
     float* midbuff_m = malloc(sizeof(float)*half_b);
@@ -355,13 +362,37 @@ int main(int argn,char* argv[]){
     int mpx_count = 0;
     while(1){
 
-        int status = get_audio(recbuff,i_buffer_size+discard_samples);
+        int status;
+        if(!discard_samples)
+            status = get_audio(recbuff,i_buffer_size);
+        else
+            status = get_audio(sample_buff,samp_size);
 
         if(status <0){
             continue;
         }
 
 
+        if(discard_samples){
+           int samp_size_s = samp_size>>1;
+           int scount = 0;
+           for(int i = 0;i<i_buffer_size;i = i+2){
+                float exact_index = scount*ratio;
+                int base1 = (int)exact_index;
+                if(base1>=samp_size_s-1)
+                    base1 = samp_size_s-1;
+                float fraction = exact_index - base1;
+                int top = base1+1;
+                if(top>=samp_size_s)
+                    top = base1;
+                int index1 = base1*2;
+                int index_e = top*2;
+                recbuff[i] = (sample_buff[index1]*(1-fraction)) + fraction*(sample_buff[index_e]);
+                recbuff[i+1] = (sample_buff[index1+1]*(1-fraction)) + fraction*(sample_buff[index_e+1]);
+                scount++;
+
+           }
+        }
         //break the stereo signal into the L+R and L-R buffers
         float* i_mb = midbuff_m;
         float* i_sb = midbuff_s;
@@ -466,6 +497,8 @@ int main(int argn,char* argv[]){
 exit:
     free_resamp(rsmp);
     free_resamp(rsmp_st);
+
+    free(sample_buff);
 
     free_gain_control(gc);
     free(pre_eq);
