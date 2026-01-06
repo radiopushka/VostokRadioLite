@@ -350,17 +350,10 @@ int main(int argn,char* argv[]){
     while(1){
 
         int status = get_audio(recbuff,i_buffer_size+discard_samples);
-        if(status ==  2){//overflow
-            discard_samples = discard_samples+2;
-            if(discard_samples>10){
-                discard_samples=10;
-            }else{
-                printf("adjusting sample discarding: %d per channel\n",discard_samples>>1);
-                free(recbuff);
-                recbuff = malloc(sizeof(int)*(i_buffer_size+discard_samples));
-            }
-        }
 
+        if(status <0){
+            continue;
+        }
 
 
         //break the stereo signal into the L+R and L-R buffers
@@ -458,7 +451,20 @@ int main(int argn,char* argv[]){
                     mpx_count = 0;
             }
         }
-        queue_audio(output);
+        status = queue_audio(output);
+        if(status ==  2){//overflow
+            discard_samples = discard_samples+2;
+            if(discard_samples>10){
+                discard_samples=10;
+            }else{
+                printf("adjusting sample discarding: %d per channel\n",discard_samples>>1);
+                free(recbuff);
+                recbuff = malloc(sizeof(int)*(i_buffer_size+discard_samples));
+            }
+        }
+
+
+
     }
 
 exit:
