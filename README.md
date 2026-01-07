@@ -19,7 +19,9 @@
 [audio]
 iface=default
 oface=default
+discard_samples=0
 ```
+- (discard_samples) this lets you adjust the sample rate if the input rate is too fast, you increase this value. Does not actually drop samples but instead performs FIR resampling.
 - This section specifies what alsa interface to use for the playback (oface) and for recording (iface) for the real time processing
 ### MPX Section
 ```
