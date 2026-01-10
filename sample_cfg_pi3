@@ -1,6 +1,6 @@
 [audio]
-iface=hw:1,0
-oface=hw:0,0
+iface=net
+oface=default
 discard_samples=0
 [MPX]
 pilot_amp=0.13

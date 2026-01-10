@@ -2,6 +2,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <stdio.h>
+#include "socket.c"
 
 #include "alsa_pipe.h"
 
@@ -13,6 +14,8 @@ unsigned int buffer_space=0;
 unsigned int start_point=0;
 pthread_mutex_t write_access;
 pthread_mutex_t pipe_access;
+pthread_mutex_t clock_access;
+pthread_cond_t clock_cond;
 
 snd_pcm_t* input=NULL;
 snd_pcm_t* output=NULL;
@@ -46,6 +49,8 @@ unsigned int logged=20; //latency
 int rate=48000;
 int memcpy_size=1;
 
+volatile int GOV_sample_clock = 0;
+
 int pcm_write(int* data,unsigned int size){
 
  snd_pcm_t* ptr_cpy=NULL;
@@ -74,6 +79,10 @@ int pcm_write(int* data,unsigned int size){
 		snd_pcm_recover(ptr_cpy,status,1);
     snd_pcm_prepare(ptr_cpy);
   }
+  pthread_mutex_lock(&clock_access);
+  GOV_sample_clock++;
+  pthread_cond_signal(&clock_cond);
+  pthread_mutex_unlock(&clock_access);
   return 1;
 }
 
@@ -137,7 +146,8 @@ void* audio_thread_cont(void* arg){
  configure_sound_card(output,forward_buffer_size*STEP_BACK,(unsigned int*)&output_rate,&channels,SND_PCM_FORMAT_S32_LE);
 
  snd_pcm_prepare(output);
- snd_pcm_link(input,output);
+ if(input)
+    snd_pcm_link(input,output);
 
   int status=0;
   while(status!=-1&&de_signal!=1){
@@ -203,13 +213,25 @@ int queue_audio(int* data){
 }
 
 int get_audio(int* data,int local_buffer_size){
-  if(input==NULL)
-    return -1;
-
   unsigned int bsize=forward_buffer_size;
   if(local_buffer_size>0){
     bsize=local_buffer_size;
   }
+
+  if(input==NULL){
+    //webserver, time readings on the governer clock of the DAC
+
+	pthread_mutex_lock(&clock_access);
+    while(GOV_sample_clock == 0){
+      pthread_cond_wait(&clock_cond, &clock_access);
+
+    }
+    GOV_sample_clock=0;
+	pthread_mutex_unlock(&clock_access);
+
+    return snd_audio_rx(data,bsize);
+  }
+
   if(input_channels>1){
     bsize=bsize>>1;
   }
@@ -236,21 +258,41 @@ int setup_alsa_pipe(char* recording_iface, char* playback_iface, int* channels_i
   start_drop=forward_buffer_size*DROPPING;
   memcpy_size=forward_buffer_size*sizeof(int);
 
-  //alsa stuff
+  //if recording interface is network
+  //alpine linux snd-aloop kernel module bug work around
+  if(strcmp(recording_iface,"net")==0){
+    input = NULL;
+    int i;
+	for(i = 0;i<10;i++){
+	  if(setup_connection()>0)
+	    break;
+	  printf("connection failed retrying\n");
+	}
+    if(i == 10)
+        return -1;
 
-  if ( snd_pcm_open(&input, recording_iface,SND_PCM_STREAM_CAPTURE, 0) < 0){
+  }else{
+
+        if ( snd_pcm_open(&input, recording_iface,SND_PCM_STREAM_CAPTURE, 0) < 0){
 		printf("unable to open recording interface\n");
 		return -1;
 	}
+
+  }
+
+  //alsa stuff
+
+
 
 	if ( snd_pcm_open(&output, playback_iface,SND_PCM_STREAM_PLAYBACK, 0) < 0){
 		printf("unable to open playback interface\n");
 		return -1;
 	}
-	if(configure_sound_card(input,forward_buffer_size*STEP_BACK,(unsigned int*)input_rate,channels_in,SND_PCM_FORMAT_S32_LE)<0){
-    printf("record config failed \n");
+	if(input)
+	  if(configure_sound_card(input,forward_buffer_size*STEP_BACK,(unsigned int*)input_rate,channels_in,SND_PCM_FORMAT_S32_LE)<0){
+		printf("record config failed \n");
 		return -1;
-	}
+	  }
     //check all parameters
 	if(configure_sound_card(output,forward_buffer_size*STEP_BACK,(unsigned int*)output_rate,channels_out,SND_PCM_FORMAT_S32_LE)<0){
     printf("play config failed \n");
@@ -260,7 +302,8 @@ int setup_alsa_pipe(char* recording_iface, char* playback_iface, int* channels_i
     sprintf(playback_iface_v,"%s",playback_iface);
 
   rate = *output_rate;
-	snd_pcm_prepare(input);
+	if(input)
+	  snd_pcm_prepare(input);
 
     //free this output and create it again in the separate thread
     //hack to fix alsa bugs
@@ -286,8 +329,11 @@ int setup_alsa_pipe(char* recording_iface, char* playback_iface, int* channels_i
 
 	pthread_mutex_init(&write_access, NULL);
 	pthread_mutex_init(&pipe_access, NULL);
+	pthread_mutex_init(&clock_access, NULL);
+    pthread_cond_init(&clock_cond,NULL);
 	pthread_mutex_unlock(&write_access);
 	pthread_mutex_unlock(&pipe_access);
+	pthread_mutex_unlock(&clock_access);
 
   pthread_create(&playback_thread,NULL,&audio_thread_cont,NULL);
 
@@ -305,13 +351,19 @@ void alsa_pipe_exit(){
     //pthread_destroy(playback_thread);
 
 
+    if(input){
 	  snd_pcm_hw_free(input);
-    snd_pcm_close(input);
+	  snd_pcm_close(input);
+    }else{
+	close_sock();
+    }
 
     snd_config_update_free_global();
 
     pthread_mutex_destroy(&pipe_access);
+    pthread_mutex_destroy(&clock_access);
     pthread_mutex_destroy(&write_access);
+    pthread_cond_destroy(&clock_cond);
 
     free(input_buffer);
     free(input_buffer_helper);
