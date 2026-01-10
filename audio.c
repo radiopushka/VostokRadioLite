@@ -14,7 +14,9 @@
 char recording[32];
 char playback[32];
 
-const float int_value = 2147483647.0;
+const float int_value = 2147483600.0;
+const float int_value_attack = int_value*0.7;
+const float int_range = int_value-int_value_attack;
 //rates fixed to 48khz and 192 khz
 //
 //user settings:
@@ -457,11 +459,46 @@ int main(int argn,char* argv[]){
             float stereo = *i_sb;
             i_mb++;i_sb++;
 
-            float stereo_val = stereo*stereo_ratio;
-            float headroom = int_value - fabs(stereo_val);
-            float ratio_mono = headroom/int_value;
-            float mono = mono_i*ratio_mono;
-            stereo = stereo_val;
+            float st_abs = fabs(stereo);
+            float m_abs = fabs(mono_i);
+            float sum = m_abs+st_abs;
+
+            float ratios = 1;
+            float ratiom = 1;
+
+            float mono =mono_i;
+
+            if(sum > int_value_attack){
+                float overflow = sum - int_value_attack;
+                float app_ratio = overflow/int_range;
+                if(app_ratio>1)
+                    app_ratio = 1;
+                float orig_ratio = 1- app_ratio;
+                ratios = st_abs/(st_abs+fabs(m_abs));
+                ratiom = 1-ratios;
+
+                float lim_st = int_value*ratios;
+                float lim_m = int_value*ratiom;
+
+                float n_st = stereo*ratios;
+                if(n_st>lim_st){
+                    n_st = lim_st;
+                }else if(n_st<-lim_st){
+                    n_st = -lim_st;
+                }
+
+                float nmon = mono_i*ratiom;
+                if(nmon>lim_m){
+                    nmon = lim_m;
+                }else if(nmon<-lim_m){
+                    nmon = -lim_m;
+                }
+
+
+                stereo = (n_st)*app_ratio + stereo*orig_ratio;
+                mono_i = (nmon)*app_ratio + mono_i*orig_ratio;
+            }
+
 
             float nmod = mono*neg_mod;
             float p_amp = (pilot_v-nmod);
