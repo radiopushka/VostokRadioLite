@@ -446,6 +446,12 @@ int main(int argn,char* argv[]){
             r = r*nbass_boost+bhpv_r*bass_boost;
             float sum = l+r;
             float diff = l-r;
+            if(mpx_anti_alias){
+                sum = aliasing(aa_m,sum);
+                diff = aliasing(aa_s,diff);
+
+            }
+
             *i_mb = sum;
             *i_sb = diff;
             i_mb++;
@@ -491,11 +497,6 @@ int main(int argn,char* argv[]){
             float stereo = *i_sb;
             i_mb++;i_sb++;
 
-            if(mpx_anti_alias){
-                mono_i = aliasing(aa_m,mono_i);
-                stereo = aliasing(aa_s,stereo);
-
-            }
 
             float st_abs = fabs(stereo);
             float m_abs = fabs(mono_i);
