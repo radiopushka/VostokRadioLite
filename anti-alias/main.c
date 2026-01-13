@@ -15,6 +15,8 @@ struct anti_aliasing* anti_aliasing_init(double* conv_frame,int frame_size){
 
     memcpy(aa->conv_buffer, conv_frame, sizeof(double)*frame_size);
 
+    memset(aa->conv_buffer_vhod, 0, sizeof(double)*frame_size);
+
     return aa;
 
 }
