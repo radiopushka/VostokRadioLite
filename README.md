@@ -31,6 +31,8 @@ stereo_ratio=0.3
 negmod=-0.02
 c1_mpx=1
 c2_mpx=1
+lookahead=10
+release=0.001
 antialias=1
 a0=0.1
 a1=0.8
@@ -41,6 +43,8 @@ a2=0.1
 - The (c1_mpx) and (c2_mpx) fields specify whether to use the right or left channel or both for MPX instead of mono audio.
 - The (antialias) flag can be set to 0 to disable the alias filter that is applied after the FFT limiter. It is highly recommended to have it on(set to one).
 - The (a0,a1,a2) define the convolution window that anti-aliasing uses. For now only a 3 point window is available.
+- The (release) defines the speed at which the final limiter disengages
+- The (lookahead) defines how many samples ahead of time the limiter starts acting
 ### Limiter Section
 ```
 [limiter]
