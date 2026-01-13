@@ -521,16 +521,16 @@ int main(int argn,char* argv[]){
 
                 float n_st = stereo*ratios;
                 if(n_st>lim_st){
-                    n_st = lim_st;
+                    n_st = tanhf(n_st/(lim_st))*lim_st;
                 }else if(n_st<-lim_st){
-                    n_st = -lim_st;
+                    n_st = tanh(n_st/(lim_st))*lim_st;
                 }
 
                 float nmon = mono_i*ratiom;
                 if(nmon>lim_m){
-                    nmon = lim_m;
+                    nmon = tanhf(nmon/(lim_m))*lim_m;
                 }else if(nmon<-lim_m){
-                    nmon = -lim_m;
+                    nmon = tanhf(nmon/(lim_m))*lim_m;
                 }
 
 
