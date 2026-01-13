@@ -352,7 +352,9 @@ int main(int argn,char* argv[]){
     struct Gain_Control *gc = gain_control_init(attack,release,target,noise_th);
     //anti aliasing to remove nasty waveforms
     struct anti_aliasing* aa_m = anti_aliasing_init(cv_frame,3);
+    struct anti_aliasing* aa_m_s = anti_aliasing_init(cv_frame,3);
     struct anti_aliasing* aa_s = anti_aliasing_init(cv_frame,3);
+    struct anti_aliasing* aa_s_s = anti_aliasing_init(cv_frame,3);
 
 
 
@@ -532,10 +534,16 @@ int main(int argn,char* argv[]){
                 }else if(nmon<-lim_m){
                     nmon = -(lim_m-((-nmon)-lim_m));
                 }
-
+                if(mpx_anti_alias){
+                    n_st = aliasing(aa_m_s,n_st);
+                    nmon = aliasing(aa_s_s,nmon);
+                }
 
                 stereo = (n_st)*app_ratio + stereo*orig_ratio;
                 mono_i = (nmon)*app_ratio + mono_i*orig_ratio;
+            }else if(mpx_anti_alias){
+                aliasing(aa_m_s,stereo);
+                aliasing(aa_s_s,mono_i);
             }
 
 
@@ -579,7 +587,9 @@ exit:
     free_gain_control(gc);
 
     free_aliasing(aa_m);
+    free_aliasing(aa_m_s);
     free_aliasing(aa_s);
+    free_aliasing(aa_s_s);
 
     free(pre_eq);
     free(recbuff);
