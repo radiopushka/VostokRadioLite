@@ -16,7 +16,7 @@ char recording[32];
 char playback[32];
 
 const float int_value = 2147483600.0;
-const float int_value_attack = int_value*0.7;
+const float int_value_attack = int_value*0.8;
 const float int_range = int_value-int_value_attack;
 //rates fixed to 48khz and 192 khz
 //
@@ -63,6 +63,7 @@ float nbass_boost;
 //anti aliasing for composite signals
 int mpx_anti_alias = 1;
 double cv_frame[] = {0.1,0.8,0.1};
+double cv_frame_clipper[] = {0.05,0.15,0.3,0.3,0.15,0.05};
 
 //sample rate tunning
 int discard_samples = 0;
@@ -352,9 +353,9 @@ int main(int argn,char* argv[]){
     struct Gain_Control *gc = gain_control_init(attack,release,target,noise_th);
     //anti aliasing to remove nasty waveforms
     struct anti_aliasing* aa_m = anti_aliasing_init(cv_frame,3);
-    struct anti_aliasing* aa_m_s = anti_aliasing_init(cv_frame,3);
+    struct anti_aliasing* aa_m_s = anti_aliasing_init(cv_frame_clipper,6);
     struct anti_aliasing* aa_s = anti_aliasing_init(cv_frame,3);
-    struct anti_aliasing* aa_s_s = anti_aliasing_init(cv_frame,3);
+    struct anti_aliasing* aa_s_s = anti_aliasing_init(cv_frame_clipper,6);
 
 
 
@@ -523,16 +524,16 @@ int main(int argn,char* argv[]){
 
                 float n_st = stereo*ratios;
                 if(n_st>lim_st){
-                    n_st = lim_st-(n_st-lim_st);
+                    n_st = lim_st;
                 }else if(n_st<-lim_st){
-                    n_st = -(lim_st-((-n_st)-lim_st));
+                    n_st = -lim_st;
                 }
 
                 float nmon = mono_i*ratiom;
                 if(nmon>lim_m){//when there is clipping mirror it back :)
-                    nmon = lim_m-(nmon-lim_m);
+                    nmon = lim_m;
                 }else if(nmon<-lim_m){
-                    nmon = -(lim_m-((-nmon)-lim_m));
+                    nmon = -lim_m;
                 }
                 if(mpx_anti_alias){
                     n_st = aliasing(aa_m_s,n_st);
