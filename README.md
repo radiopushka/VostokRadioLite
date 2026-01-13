@@ -40,7 +40,7 @@ a2=0.1
 - It also contains (negmod) which provides negative amplitude modulation of the pilot tone if the sound card or anything outside modulates the pilot tone, causing annoying ultrasonic artifacts in the audio. Set it to a negative value for positive modulation. This is a problem with the DAC+, the PI DAC+ contains an onboard headphone amplifier which draws current from the local power rail. Hence, it affects the amplitude of all outputs and causes negative pilot tone modulation. This parameter is to compensate for it. 
 - The (c1_mpx) and (c2_mpx) fields specify whether to use the right or left channel or both for MPX instead of mono audio.
 - The (antialias) flag can be set to 0 to disable the alias filter that is applied after the FFT limiter. It is highly recommended to have it on(set to one).
-- The (a0,a1,a2) define the convolution window that anti-aliasing uses.
+- The (a0,a1,a2) define the convolution window that anti-aliasing uses. For now only a 3 point window is available.
 ### Limiter Section
 ```
 [limiter]
