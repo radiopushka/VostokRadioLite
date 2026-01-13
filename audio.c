@@ -523,18 +523,27 @@ int main(int argn,char* argv[]){
                 float lim_m = int_value*ratiom;
 
                 float n_st = stereo*ratios;
-                if(n_st>lim_st){
+j2:
+                while(n_st>lim_st){
                      n_st = lim_st-(n_st-lim_st);
-                }else if(n_st<-lim_st){
+                }
+                while(n_st<-lim_st){
                      n_st = -(lim_st-((-n_st)-lim_st));
                 }
+                if(n_st>lim_st)
+                    goto j2;
 
                 float nmon = mono_i*ratiom;
-                if(nmon>lim_m){//when there is clipping mirror it back :)
+j1:
+                while(nmon>lim_m){//when there is clipping mirror it back :)
                      nmon = lim_m-(nmon-lim_m);
-                }else if(nmon<-lim_m){
+                }
+                while(nmon<-lim_m){
                     nmon = -(lim_m-((-nmon)-lim_m));
                 }
+                if(nmon>lim_m)
+                    goto j1;
+
                 if(mpx_anti_alias){
                     n_st = aliasing(aa_m_s,n_st);
                     nmon = aliasing(aa_s_s,nmon);
