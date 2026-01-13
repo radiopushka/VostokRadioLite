@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include "./anti-alias/aliasing.h"
 
 //the Raspberry Pi will have no cli control, purely config file based
 //CPU is limited
@@ -58,6 +59,10 @@ float bhpv_l = 0;
 float bhpv_r = 0;
 float bass_boost = 0.4;
 float nbass_boost;
+
+//anti aliasing for composite signals
+int mpx_anti_alias = 1;
+double cv_frame[] = {0.1,0.8,0.1};
 
 //sample rate tunning
 int discard_samples = 0;
@@ -117,6 +122,30 @@ void setup_globals_from_config(char* file){
         c2_MPX = atof(c2_mpx_f);
         printf("channel 1 MPX: %d\n",c2_MPX);
     }
+    char* alias_f = get_value_by(cfg,"MPX","antialias");
+    if(alias_f){
+        mpx_anti_alias = atoi(alias_f);
+        printf("composite anti-aliasing %d\n",mpx_anti_alias);
+    }
+    char* aliasw1_f = get_value_by(cfg,"MPX","a0");
+    if(aliasw1_f){
+        cv_frame[0] = atof(aliasw1_f);
+        printf("aliasing buffer 0:%f\n",cv_frame[0]);
+    }
+    char* aliasw2_f = get_value_by(cfg,"MPX","a1");
+    if(aliasw2_f){
+        cv_frame[1] = atof(aliasw2_f);
+        printf("aliasing buffer 1:%f\n",cv_frame[1]);
+    }
+    char* aliasw3_f = get_value_by(cfg,"MPX","a2");
+    if(aliasw3_f){
+        cv_frame[2] = atof(aliasw3_f);
+        printf("aliasing buffer 2:%f\n",cv_frame[2]);
+    }
+
+
+
+
 
 
 
@@ -321,6 +350,9 @@ int main(int argn,char* argv[]){
     struct FFT_rsmp *rsmp_st = FFT_resample_init(bins,lookahead, 1000, 16000,bass_cut, rate1);
     //gain controller
     struct Gain_Control *gc = gain_control_init(attack,release,target,noise_th);
+    //anti aliasing to remove nasty waveforms
+    struct anti_aliasing* aa_m = anti_aliasing_init(cv_frame,3);
+    struct anti_aliasing* aa_s = anti_aliasing_init(cv_frame,3);
 
 
 
@@ -459,6 +491,12 @@ int main(int argn,char* argv[]){
             float stereo = *i_sb;
             i_mb++;i_sb++;
 
+            if(mpx_anti_alias){
+                mono_i = aliasing(aa_m,mono_i);
+                stereo = aliasing(aa_s,stereo);
+
+            }
+
             float st_abs = fabs(stereo);
             float m_abs = fabs(mono_i);
             float sum = m_abs+st_abs;
@@ -538,6 +576,10 @@ exit:
     free(sample_buff);
 
     free_gain_control(gc);
+
+    free_aliasing(aa_m);
+    free_aliasing(aa_s);
+
     free(pre_eq);
     free(recbuff);
     free(midbuff_m);

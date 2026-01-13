@@ -8,6 +8,10 @@ stereo_ratio=0.3
 negmod=-0.04
 c1_mpx=1
 c2_mpx=1
+antialias=1
+a0=0.1
+a1=0.8
+a2=0.1
 [limiter]
 pre_amp=0.7
 lookahead=10
