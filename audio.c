@@ -524,16 +524,16 @@ int main(int argn,char* argv[]){
 
                 float n_st = stereo*ratios;
                 if(n_st>lim_st){
-                    n_st = lim_st;
+                     n_st = lim_st-(n_st-lim_st);
                 }else if(n_st<-lim_st){
-                    n_st = -lim_st;
+                     n_st = -(lim_st-((-n_st)-lim_st));
                 }
 
                 float nmon = mono_i*ratiom;
                 if(nmon>lim_m){//when there is clipping mirror it back :)
-                    nmon = lim_m;
+                     nmon = lim_m-(nmon-lim_m);
                 }else if(nmon<-lim_m){
-                    nmon = -lim_m;
+                    nmon = -(lim_m-((-nmon)-lim_m));
                 }
                 if(mpx_anti_alias){
                     n_st = aliasing(aa_m_s,n_st);
