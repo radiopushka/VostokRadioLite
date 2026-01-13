@@ -4,6 +4,7 @@ OPT_FLAGS=-O3 -march=native -ffast-math -funroll-loops -ftree-vectorize -flto -f
 FFT=./FFT/FFT.c
 ALIAS=./anti-alias/main.c
 CONFIG=./config_file/config.c
+COMP=./matrix_controller/algo.c
 ALSA=./alsa_pipe/main.c
 DEQ=./EQ_max_algorithm/maxim.c
 
@@ -11,4 +12,4 @@ DEQ=./EQ_max_algorithm/maxim.c
 # CPU usage of 96-100% is normal
 
 all:
-	$(CC) audio.c $(FFT) $(DEQ) $(ALIAS) $(CONFIG) $(ALSA) $(PI3_FLAGS) $(OPT_FLAGS)  -lm -lasound -Wall -o vtkradio
+	$(CC) audio.c $(FFT) $(COMP) $(DEQ) $(ALIAS) $(CONFIG) $(ALSA) $(PI3_FLAGS) $(OPT_FLAGS)  -lm -lasound -Wall -o vtkradio

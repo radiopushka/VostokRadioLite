@@ -6,6 +6,7 @@
 #include <math.h>
 #include <string.h>
 #include "./anti-alias/aliasing.h"
+#include "./matrix_controller/head.h"
 
 //the Raspberry Pi will have no cli control, purely config file based
 //CPU is limited
@@ -16,8 +17,6 @@ char recording[32];
 char playback[32];
 
 const float int_value = 2147483600.0;
-const float int_value_attack = int_value*0.8;
-const float int_range = int_value-int_value_attack;
 //rates fixed to 48khz and 192 khz
 //
 //user settings:
@@ -63,8 +62,9 @@ float nbass_boost;
 //anti aliasing for composite signals
 int mpx_anti_alias = 1;
 double cv_frame[] = {0.1,0.8,0.1};
-double cv_frame_clipper[] = {0.05,0.15,0.3,0.3,0.15,0.05};
 
+float composite_release = 0.0001;
+int composite_lookahead = 10;
 //sample rate tunning
 int discard_samples = 0;
 //so that we can call this later from a gui
@@ -142,6 +142,18 @@ void setup_globals_from_config(char* file){
     if(aliasw3_f){
         cv_frame[2] = atof(aliasw3_f);
         printf("aliasing buffer 2:%f\n",cv_frame[2]);
+    }
+
+
+    char* cmplim_f = get_value_by(cfg,"MPX","lookahead");
+    if(cmplim_f){
+        composite_lookahead = atoi(cmplim_f);
+        printf("composite lookahead:%d\n",composite_lookahead);
+    }
+    char* cmprl_f = get_value_by(cfg,"MPX","release");
+    if(cmprl_f){
+        composite_release = atof(cmprl_f);
+        printf("composite release:%f\n",composite_release);
     }
 
 
@@ -353,9 +365,12 @@ int main(int argn,char* argv[]){
     struct Gain_Control *gc = gain_control_init(attack,release,target,noise_th);
     //anti aliasing to remove nasty waveforms
     struct anti_aliasing* aa_m = anti_aliasing_init(cv_frame,3);
-    struct anti_aliasing* aa_m_s = anti_aliasing_init(cv_frame_clipper,6);
     struct anti_aliasing* aa_s = anti_aliasing_init(cv_frame,3);
-    struct anti_aliasing* aa_s_s = anti_aliasing_init(cv_frame_clipper,6);
+
+    //stereo matrix regulator and composite limiter
+
+    struct Matrix_st* sreg = Matrix_st_init(composite_lookahead,composite_release);
+
 
 
 
@@ -496,65 +511,11 @@ int main(int argn,char* argv[]){
         float limit_audio = (1-(pilot_amp+fabs(neg_mod)));
         float pilot_v = pilot_amp*int_value;
         for(int i = 0;i<half_b;i++){
-            float mono_i = *i_mb;
+            float mono = *i_mb;
             float stereo = *i_sb;
             i_mb++;i_sb++;
 
-
-            float st_abs = fabs(stereo);
-            float m_abs = fabs(mono_i);
-            float sum = m_abs+st_abs;
-
-            float ratios = 1;
-            float ratiom = 1;
-
-            float mono =mono_i;
-
-            if(sum > int_value_attack){
-                float overflow = sum - int_value_attack;
-                float app_ratio = overflow/int_range;
-                if(app_ratio>1)
-                    app_ratio = 1;
-                float orig_ratio = 1- app_ratio;
-                ratios = st_abs/(st_abs+fabs(m_abs));
-                ratiom = 1-ratios;
-
-                float lim_st = int_value*ratios;
-                float lim_m = int_value*ratiom;
-
-                float n_st = stereo*ratios;
-j2:
-                while(n_st>lim_st){
-                     n_st = lim_st-(n_st-lim_st);
-                }
-                while(n_st<-lim_st){
-                     n_st = -(lim_st-((-n_st)-lim_st));
-                }
-                if(n_st>lim_st)
-                    goto j2;
-
-                float nmon = mono_i*ratiom;
-j1:
-                while(nmon>lim_m){//when there is clipping mirror it back :)
-                     nmon = lim_m-(nmon-lim_m);
-                }
-                while(nmon<-lim_m){
-                    nmon = -(lim_m-((-nmon)-lim_m));
-                }
-                if(nmon>lim_m)
-                    goto j1;
-
-                if(mpx_anti_alias){
-                    n_st = aliasing(aa_m_s,n_st);
-                    nmon = aliasing(aa_s_s,nmon);
-                }
-
-                stereo = (n_st)*app_ratio + stereo*orig_ratio;
-                mono_i = (nmon)*app_ratio + mono_i*orig_ratio;
-            }else if(mpx_anti_alias){
-                aliasing(aa_m_s,stereo);
-                aliasing(aa_s_s,mono_i);
-            }
+            Matrix_st_update(sreg, &stereo, &mono, int_value);
 
 
             float nmod = mono*neg_mod;
@@ -570,12 +531,12 @@ j1:
                 if(c1_MPX)
                     *oi = sample;
                 else
-                    *oi = mono_i;
+                    *oi = mono;
                 oi++;
                 if(c2_MPX)
                     *oi = sample;
                 else
-                    *oi = mono_i;
+                    *oi = mono;
                 oi++;
                 mpx_count++;
                 if(mpx_count >= mpx_b)
@@ -597,9 +558,9 @@ exit:
     free_gain_control(gc);
 
     free_aliasing(aa_m);
-    free_aliasing(aa_m_s);
     free_aliasing(aa_s);
-    free_aliasing(aa_s_s);
+
+    Matrix_st_free(sreg);
 
     free(pre_eq);
     free(recbuff);
