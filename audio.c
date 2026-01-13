@@ -523,14 +523,14 @@ int main(int argn,char* argv[]){
                 if(n_st>lim_st){
                     n_st = lim_st-(n_st-lim_st);
                 }else if(n_st<-lim_st){
-                    n_st = lim_st+(n_st+lim_st);
+                    n_st = -(lim_st-((-n_st)-lim_st));
                 }
 
                 float nmon = mono_i*ratiom;
                 if(nmon>lim_m){//when there is clipping mirror it back :)
                     nmon = lim_m-(nmon-lim_m);
                 }else if(nmon<-lim_m){
-                    nmon = lim_m+(nmon+lim_m);
+                    nmon = -(lim_m-((-nmon)-lim_m));
                 }
 
 
