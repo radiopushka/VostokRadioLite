@@ -8,7 +8,7 @@
 - **Configuration** ```cd VostokRadioLite``` and then edit the Makefile change ```$(PI3_FLAGS)``` to ```$(PI_FLAGS)``` if using the PI zero or Zero 2W.
 - **Compilation**: simply run ```make```
 - **Installation**: ```cp ./vtkradio /usr/bin``` or where ever you want to put it.
-- **Configuration**: the sample_cfg file has all the configuration options available, pass it to vtkradio: ```vtkradio ./sample_cfg``` and it will show you the active configuration.
+- **Configuration**: the audiocfg file has all the configuration options available, pass it to vtkradio: ```vtkradio ./sample_cfg``` and it will show you the active configuration. It is optimized for the PI 3 A+ and above as well as most professional FM transmitters.
 - **Setup**: if your pilot is not on 19khz sharp, you might have to overclock/underclock, trim the DAC+ clock via alsamixer, so that the two oscillators are in sync.
 
 ## Configuration file guide
