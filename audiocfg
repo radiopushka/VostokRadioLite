@@ -26,7 +26,7 @@ basscut=0.000000000001
 attack=0.000000002
 release=0.000000000001
 target=20e+8
-noise_th=4e+6
+noise_th=8e+6
 [highpass]
 alpha=0.0000000000001
 [bassboost]
