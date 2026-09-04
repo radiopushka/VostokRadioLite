@@ -4,7 +4,7 @@ oface=hw:0,0
 discard_samples=0
 [MPX]
 pilot_amp=0.15
-stereo_ratio=0.015
+stereo_ratio=0.007
 negmod=0
 c1_mpx=1
 c2_mpx=1
