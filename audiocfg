@@ -17,7 +17,7 @@ a2=0.01
 [limiter]
 pre_amp=0.6
 lookahead=4
-post_amp=0.7
+post_amp=0.5
 limit=30e+9
 save_harmonics=0.4
 bins=45
