@@ -15,24 +15,24 @@ a0=0.01
 a1=0.98
 a2=0.01
 [limiter]
-pre_amp=80000
+pre_amp=160000
 lookahead=1
-post_amp=0.48
+post_amp=0.45
 limit=20e+9
 save_harmonics=0.6
 bins=45
 basscut=20
 [agc]
-attack= 0.000000000001
-release=0.000000000001
+attack= 0.00000001
+release=0.00000001
 target=120e+8
 noise_th=30
 [highpass]
-alpha=0.003
+alpha=0.002
 [bassboost]
 boost=0.8
 [eq]
-0=0.5
+0=1
 1=0.01
 2=0.01
 3=0.01
@@ -71,10 +71,10 @@ boost=0.8
 37=2
 38=2
 39=1.6
-40=1.1
-41=1.0
-42=1.0
-43=1
+40=1.6
+41=1.6
+42=1.6
+43=1.6
 44=0.5
 [release]
 0=0.000000000000000000001
