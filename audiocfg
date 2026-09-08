@@ -21,12 +21,12 @@ post_amp=0.45
 limit=20e+9
 save_harmonics=0.2
 bins=45
-basscut=20
+basscut=30
 [agc]
 attack=0.0000000001
 release=0.0000000001
 target=140e+8
-noise_th=30
+noise_th=60
 [highpass]
 alpha=0.0017
 [bassboost]
