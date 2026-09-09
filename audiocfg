@@ -19,7 +19,7 @@ pre_amp=1
 lookahead=1
 post_amp=0.45
 limit=20e+9
-save_harmonics=0.2
+save_harmonics=0.4
 bins=45
 basscut=60
 [agc]
