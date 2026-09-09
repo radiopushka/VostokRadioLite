@@ -4,7 +4,7 @@ oface=hw:0,0
 discard_samples=0
 [MPX]
 pilot_amp=0.15
-stereo_ratio=0.04
+stereo_ratio=0.1
 negmod=0
 c1_mpx=1
 c2_mpx=1
@@ -15,7 +15,7 @@ a0=0.01
 a1=0.98
 a2=0.01
 [limiter]
-pre_amp=320000
+pre_amp=10
 lookahead=1
 post_amp=0.45
 limit=20e+9
@@ -23,10 +23,10 @@ save_harmonics=0.2
 bins=45
 basscut=30
 [agc]
-attack=0.0000000001
-release=0.0000000001
-target=140e+8
-noise_th=5000
+attack=0.0000000000001
+release=0.00001
+target=32e+840
+noise_th=0.3
 [highpass]
 alpha=0.0017
 [bassboost]
