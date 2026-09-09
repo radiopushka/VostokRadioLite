@@ -21,7 +21,7 @@ post_amp=0.45
 limit=20e+9
 save_harmonics=0.2
 bins=45
-basscut=30
+basscut=60
 [agc]
 attack=0.0000000000001
 release=0.00001
