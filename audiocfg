@@ -24,7 +24,7 @@ bins=45
 basscut=60
 [agc]
 attack=0.0000001
-release=0.001
+release=0.0005
 target=32e+100
 noise_th=0.3
 [highpass]
