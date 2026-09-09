@@ -24,13 +24,13 @@ bins=45
 basscut=60
 [agc]
 attack=0.0000001
-release=0.00035
+release=0.0001
 target=32e+100
 noise_th=0.3
 [highpass]
 alpha=0.0017
 [bassboost]
-boost=0.8
+boost=0.85
 [eq]
 0=0.01
 1=0.01
