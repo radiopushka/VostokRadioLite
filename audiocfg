@@ -15,7 +15,7 @@ a0=0.01
 a1=0.98
 a2=0.01
 [limiter]
-pre_amp=10
+pre_amp=4
 lookahead=1
 post_amp=0.45
 limit=20e+9
