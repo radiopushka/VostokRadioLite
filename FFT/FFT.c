@@ -84,8 +84,8 @@ struct FFT_rsmp *FFT_resample_init(int bins,int ring_buffer_delay, float fs, flo
             long double ac = 0;
             long double as = 0;
             for(int i3 = 0;i3<4;i3++){
-                ac = ac + cosl(counter);
-                as = as + sinl(counter);
+                ac = ac + cos(counter);
+                as = as + sin(counter);
                 counter += shifter;
                 if(counter > M_PI*2){
                     counter -= M_PI*2;

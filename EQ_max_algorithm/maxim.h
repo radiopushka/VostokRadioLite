@@ -15,7 +15,7 @@ struct Gain_Control{
     float gain;
 };
 struct Gain_Control* gain_control_init(float attack, float release, float target,float noise_th);
-void gain_control(struct Gain_Control* gc, float* levo,float* pravo);
+void gain_control(struct Gain_Control* gc, float levo,float pravo);
 void set_gain_control(struct Gain_Control* gc, float target,float attack, float release,float noise_th);
 void free_gain_control(struct Gain_Control* gc);
 

@@ -59,6 +59,11 @@ float bhpv_r = 0;
 float bass_boost = 0.4;
 float nbass_boost;
 
+
+//AGC response
+//float agc_hpf=0.001;
+//float nagc_hpf=1-agc_hpf;
+
 //anti aliasing for composite signals
 int mpx_anti_alias = 1;
 double cv_frame[] = {0.1,0.8,0.1};
@@ -453,15 +458,16 @@ int main(int argn,char* argv[]){
 
             float l = ((float)(*sp))*pre_amp;
             float r = ((float)(*(sp+1)))*pre_amp;
+
             hpv_r = hpv_r*nalpha+r*alpha;
             hpv_l = hpv_l*nalpha+l*alpha;
-            r = r - hpv_r;
-            l = l - hpv_l;
-            gain_control(gc,&l,&r);
+
+            gain_control(gc,hpv_l,hpv_r);
+            
             bhpv_r = bhpv_r*nalpha+r*alpha;
             bhpv_l = bhpv_l*nalpha+l*alpha;
-            l = l*nbass_boost+bhpv_l*bass_boost;
-            r = r*nbass_boost+bhpv_r*bass_boost;
+            l = ((l-bhpv_l)*nbass_boost+bhpv_l*bass_boost)*gc->gain;
+            r = ((r-bhpv_r)*nbass_boost+bhpv_r*bass_boost)*gc->gain;
             float sum = l+r;
             float diff = l-r;
             if(mpx_anti_alias){
