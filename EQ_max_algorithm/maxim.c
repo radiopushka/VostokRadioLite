@@ -90,7 +90,7 @@ void adjust_eq(float *eq,float* fft_out,int* rastoyane, int bins, float limit,fl
 }
 //gain controller
 //set to 100 for Pi zero, set to 1024 for normal computers
-int agc_lookahead = 300;
+int agc_lookahead = 50;
 struct Gain_Control* gain_control_init(float attack, float release, float target,float noise_th){
     struct Gain_Control* gc = malloc(sizeof(struct Gain_Control));
     gc->attack = attack;
@@ -116,8 +116,7 @@ void gain_control(struct Gain_Control* gc, float* levo, float* pravo){
     float left = *levo;
     float right = *pravo;
     float stereo = left-right;
-    float sum = ((left+right)+stereo)/2.0;
-    sum = sum*sum;
+    float sum = ((left+right)+stereo);
 
     float run_sum = 0;
     for(float* restrict i = gc->RMS_sum + (agc_lookahead-1);i>gc->RMS_sum;i--){
@@ -126,21 +125,22 @@ void gain_control(struct Gain_Control* gc, float* levo, float* pravo){
         *i = val;
     }
     run_sum = run_sum + sum;
-    *(gc->RMS_sum) = sum;
+    *(gc->RMS_sum) = fabs(sum);
 
 
 
 
-    float rms_val_ps = run_sum/agc_lookahead;
+    float average = run_sum/agc_lookahead;
 
-    float rms_val = sqrtf(rms_val_ps);
+    float rms_val = average;
 
     if(rms_val<gc->noise_th){
-        if(gc->gain<0.9){
+        if(gc->gain<1.0 - release){
             gc->gain = gc->gain + release;
-        }
-        if(gc->gain>1.1){
+        }else if(gc->gain>1.0+release){
             gc->gain = gc->gain - release;
+        }else{
+          gc->gain = 1.0;
         }
     }else{
         if(rms_val*gc->gain > target){
