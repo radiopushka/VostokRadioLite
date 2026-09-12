@@ -90,7 +90,7 @@ void adjust_eq(float *eq,float* fft_out,int* rastoyane, int bins, float limit,fl
 }
 //gain controller
 //set to 100 for Pi zero, set to 1024 for normal computers
-int agc_lookahead = 50;
+int agc_lookahead = 5;
 struct Gain_Control* gain_control_init(float attack, float release, float target,float noise_th){
     struct Gain_Control* gc = malloc(sizeof(struct Gain_Control));
     gc->attack = attack;
