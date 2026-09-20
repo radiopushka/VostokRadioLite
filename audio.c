@@ -59,6 +59,12 @@ float bhpv_r = 0;
 float bass_boost = 0.4;
 float nbass_boost;
 
+//DC removal
+float DC_l=0;
+float DC_r=0;
+float aDC=0.0000001;
+float naDC=1.0-0.0000001;
+
 
 //AGC response
 //float agc_hpf=0.001;
@@ -459,15 +465,21 @@ int main(int argn,char* argv[]){
             float l = ((float)(*sp))*pre_amp;
             float r = ((float)(*(sp+1)))*pre_amp;
 
+	    //DC removal
+	    DC_l=DC_l*naDC+l*aDC;
+	    DC_r=DC_r*naDC+r*aDC;
+	    l=l-DC_l;
+	    r=r-DC_r;
+
             hpv_r = hpv_r*nalpha+r*alpha;
             hpv_l = hpv_l*nalpha+l*alpha;
 
             gain_control(gc,hpv_l,hpv_r);
             
-            bhpv_r = bhpv_r*nalpha+r*alpha;
-            bhpv_l = bhpv_l*nalpha+l*alpha;
-            l = ((l-bhpv_l)*nbass_boost+bhpv_l*bass_boost)*gc->gain;
-            r = ((r-bhpv_r)*nbass_boost+bhpv_r*bass_boost)*gc->gain;
+            //bhpv_r = bhpv_r*nalpha+r*alpha;
+            //bhpv_l = bhpv_l*nalpha+l*alpha;
+            l = ((l-hpv_l)*nbass_boost+hpv_l*bass_boost)*gc->gain;
+            r = ((r-hpv_r)*nbass_boost+hpv_r*bass_boost)*gc->gain;
             float sum = l+r;
             float diff = l-r;
             if(mpx_anti_alias){
