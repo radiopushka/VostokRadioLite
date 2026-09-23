@@ -9,7 +9,7 @@ negmod=0
 c1_mpx=1
 c2_mpx=1
 antialias=0
-release=0.3
+release=0.1
 lookahead=1
 a0=0.01
 a1=0.98
@@ -23,7 +23,7 @@ save_harmonics=0.7
 bins=45
 basscut=0.0048
 [agc]
-attack=0.0000001
+attack=0.000001
 release=0.0001
 target=200e+7
 noise_th=1
