@@ -4,12 +4,12 @@ oface=hw:0,0
 discard_samples=0
 [MPX]
 pilot_amp=0.15
-stereo_ratio=0.0020
+stereo_ratio=0.0010
 negmod=0
 c1_mpx=1
 c2_mpx=1
 antialias=0
-release=0.9
+release=0.3
 lookahead=1
 a0=0.01
 a1=0.98
@@ -18,8 +18,8 @@ a2=0.01
 pre_amp=1
 lookahead=1
 post_amp=0.25
-limit=20e+9
-save_harmonics=0.5
+limit=40e+9
+save_harmonics=0.7
 bins=45
 basscut=0.0048
 [agc]
