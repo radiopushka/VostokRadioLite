@@ -53,7 +53,9 @@ float nalpha;//10hz
 float hpv_l = 0;
 float hpv_r = 0;
 
-//bass boost
+//AGC response curve, roll off around 300Hz
+const float agc_alpha=300.0/48000.0;
+float nagc_alpha=1.0-agc_alpha;
 float bhpv_l = 0;
 float bhpv_r = 0;
 float bass_boost = 0.4;
@@ -474,10 +476,11 @@ int main(int argn,char* argv[]){
             hpv_r = hpv_r*nalpha+r*alpha;
             hpv_l = hpv_l*nalpha+l*alpha;
 
-            gain_control(gc,l-hpv_l,r-hpv_r);
+	    //AGC response frequency vs perceived amplitude flatten
+            bhpv_r = bhpv_r*nagc_alpha+r*agc_alpha;
+            bhpv_l = bhpv_l*nagc_alpha+l*agc_alpha;
+            gain_control(gc,l-bhpv_l,r-bhpv_r);
             
-            //bhpv_r = bhpv_r*nalpha+r*alpha;
-            //bhpv_l = bhpv_l*nalpha+l*alpha;
             l = ((l-hpv_l)*nbass_boost+hpv_l*bass_boost)*gc->gain;
             r = ((r-hpv_r)*nbass_boost+hpv_r*bass_boost)*gc->gain;
             float sum = l+r;
