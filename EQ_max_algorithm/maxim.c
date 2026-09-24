@@ -118,7 +118,7 @@ void gain_control(struct Gain_Control* gc, float levo, float pravo){
     float stereo = left-right;
     float sum = (fabs((left+right))+fabs(stereo));
 
-    float run_sum = 0;
+    /*float run_sum = 0;
     for(float* restrict i = gc->RMS_sum + (agc_lookahead-1);i>gc->RMS_sum;i--){
         float val = *(i-1);
         run_sum = run_sum + val;
@@ -127,27 +127,22 @@ void gain_control(struct Gain_Control* gc, float levo, float pravo){
     run_sum = run_sum + sum;
     *(gc->RMS_sum) = sum;
 
+    */
+    
 
 
 
-    float average = run_sum/agc_lookahead;
-
-    float rms_val = average;
+    float rms_val = sum;
   
-    float clamp = (gc->release*target)/2.0;
 
     if(rms_val<gc->noise_th){
-        if(gc->gain<1.0 - release){
-            gc->gain = gc->gain + release;
-        }else if(gc->gain>1.0+release){
+        if(gc->gain>1.0){
             gc->gain = gc->gain - release;
-        }else{
-          gc->gain = 1.0;
         }
     }else{
-        if(rms_val*gc->gain > target + clamp){
+        if(rms_val*gc->gain > target ){
             gc->gain = gc->gain - attack;
-        }else if (rms_val*(gc->gain) < target - clamp){
+        }else if (rms_val*(gc->gain) < target ){
             gc->gain = gc->gain + release;
         }
     }

@@ -474,7 +474,7 @@ int main(int argn,char* argv[]){
             hpv_r = hpv_r*nalpha+r*alpha;
             hpv_l = hpv_l*nalpha+l*alpha;
 
-            gain_control(gc,hpv_l,hpv_r);
+            gain_control(gc,l-hpv_l,r-hpv_r);
             
             //bhpv_r = bhpv_r*nalpha+r*alpha;
             //bhpv_l = bhpv_l*nalpha+l*alpha;
