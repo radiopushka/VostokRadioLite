@@ -66,19 +66,21 @@ void adjust_eq(float *eq,float* fft_out,int* rastoyane, int bins, float limit,fl
     for(float* restrict eq_ittr = eq;eq_ittr<eq+bins;eq_ittr++,helper_ittr++,fft_out_ittr++,r_ittr++){
         if(*fft_out_ittr!=0){
             float mult = (*helper_ittr);
-            float distance = (*r_ittr);
+            float distance_x = (*r_ittr);
             float current = *eq_ittr;
             float target = (mult*limit);
             float eq_targ = (target/(*fft_out_ittr));
 
             if(eq_targ<*eq_ittr || (*release_ittr > 0.4)){
-                float diff = eq_targ-current;
+                float t_gain = eq_targ/current;
+                float d_gain = t_gain-*eq_ittr;
 
-                *eq_ittr = *eq_ittr+(diff/distance);
+                *eq_ittr = *eq_ittr+(d_gain/distance_x);
             }else{
-                float diff = eq_targ-current;
 
-                *eq_ittr = *eq_ittr+(diff*(*release_ittr));
+                *eq_ittr = *eq_ittr+(*release_ittr);
+                if(*eq_ittr > 1.0)
+                  *eq_ittr=1.0;
 
             }
             release_ittr++;
