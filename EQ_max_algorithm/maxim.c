@@ -142,17 +142,11 @@ void gain_control(struct Gain_Control* gc, float levo, float pravo){
     float rms_val = sum;
   
 
-    if(rms_val<gc->noise_th){
-        if(gc->gain>1.0){
-            gc->gain = gc->gain - release;
-        }
-    }else{
         if(rms_val*gc->gain > target ){
             gc->gain = gc->gain - attack;
         }else if (rms_val*(gc->gain) < target ){
             gc->gain = gc->gain + release;
         }
-    }
 
 
 }
