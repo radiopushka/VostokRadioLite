@@ -23,8 +23,8 @@ save_harmonics=0.05
 bins=45
 basscut=0.0048
 [agc]
-attack=0.05
-release=0.001
+attack=0.005
+release=0.0001
 target=170000e+7
 noise_th=100
 [highpass]
