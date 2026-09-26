@@ -10,7 +10,7 @@ c1_mpx=1
 c2_mpx=1
 antialias=0
 release=0.1
-lookahead=3
+lookahead=1
 a0=0.01
 a1=0.98
 a2=0.01
@@ -23,8 +23,8 @@ save_harmonics=0.05
 bins=45
 basscut=0.0048
 [agc]
-attack=0.05
-release=0.001
+attack=0.005
+release=0.0001
 target=240000e+7
 noise_th=3000
 [highpass]
