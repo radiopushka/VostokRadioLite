@@ -16,9 +16,9 @@ a1=0.98
 a2=0.01
 [limiter]
 pre_amp=1
-lookahead=15
+lookahead=10
 post_amp=0.25
-limit=2.5e+9
+limit=3e+9
 save_harmonics=0.05
 bins=45
 basscut=0.0048
@@ -77,8 +77,8 @@ boost=0.88
 43=1.1
 44=0.0
 [release]
-0=0.00003
-1=0.00005
+0=0.00001
+1=0.0009
 2=0.000001
 3=0.000001
 4=0.000001
