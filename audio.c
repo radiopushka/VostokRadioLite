@@ -17,6 +17,7 @@ char recording[32];
 char playback[32];
 
 const float int_value = 2147483600.0;
+const float nint_value = -2147483600.0;
 //rates fixed to 48khz and 192 khz
 //
 //user settings:
@@ -71,6 +72,12 @@ float naDC=1.0-0.0000001;
 //AGC response
 //float agc_hpf=0.001;
 //float nagc_hpf=1-agc_hpf;
+//
+//
+//simple stokemask
+float prev_comp=0.0;
+float stmultiplier=1.0;
+float pilot_lag=0.0;
 
 //anti aliasing for composite signals
 int mpx_anti_alias = 1;
@@ -371,6 +378,9 @@ int main(int argn,char* argv[]){
         setup_from_config(eq,l_release,argv[1]);
     }
 
+  //fast lookahead composite clipper
+  //stokemask
+
     //FFT resampling mono
     struct FFT_rsmp *rsmp = FFT_resample_init(bins,lookahead, 1000, 16000,bass_cut, rate1);
     struct FFT_rsmp *rsmp_st = FFT_resample_init(bins,lookahead, 1000, 16000,bass_cut, rate1);
@@ -529,25 +539,52 @@ int main(int argn,char* argv[]){
         i_mb = midbuff_m;
         i_sb = midbuff_s;
 
-        float limit_audio = (1-(pilot_amp+fabs(neg_mod)));
+        float limit_audio = (1-pilot_amp);
         float pilot_v = pilot_amp*int_value;
         for(int i = 0;i<half_b;i++){
             float mono = *i_mb;
             float stereo = *i_sb;
             i_mb++;i_sb++;
 
-            Matrix_st_update(sreg, &stereo, &mono, int_value);
+           // Matrix_st_update(sreg, &stereo, &mono, int_value);
 
 
-            float nmod = mono*neg_mod;
-            float p_amp = (pilot_v-nmod);
+            float p_amp = (pilot_v);
 
             //put 8 samples for 192 khz
             for(int i2 = 0;i2<4;i2++){
                 float w38 = synth_38[mpx_count];
                 float w19 = synth_19[mpx_count];
 
-                float sample = w19*p_amp+(w38*stereo+mono)*limit_audio;
+                float composite=(w38*stereo+mono);
+
+
+
+                //hard_clip
+
+
+              float cmp_abs=fabs(composite)*stmultiplier;
+              if(cmp_abs>int_value){
+
+                  stmultiplier=stmultiplier-(1.0-(int_value/cmp_abs)); 
+                  
+              }else if(stmultiplier<1.0 && cmp_abs < int_value){
+                  stmultiplier=stmultiplier+composite_release;
+                  if(stmultiplier>1.0){
+                      stmultiplier=1.0;
+                  }
+              }
+
+              float tbo=prev_comp*stmultiplier;
+              if(tbo>int_value){
+                tbo=int_value;
+              }else if(tbo<nint_value){
+                tbo=nint_value;
+              }
+                
+                prev_comp=composite;
+                float sample = pilot_lag+(tbo)*limit_audio;
+                pilot_lag=w19*p_amp;
                 //float sample = stereo+mono;
                 if(c1_MPX)
                     *oi = sample;
