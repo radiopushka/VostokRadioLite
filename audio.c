@@ -79,6 +79,12 @@ float prev_comp=0.0;
 float stmultiplier=1.0;
 float pilot_lag=0.0;
 
+//sampling mask
+float samp_mask[]={0.1667f,0.3333f,0.3333f,0.1667f};
+int mask_index=0;
+float samp_mask_s[]={0.0f,0.0f,0.0f,0.0f};
+float samp_mask_m[]={0.0f,0.0f,0.0f,0.0f};
+
 //anti aliasing for composite signals
 int mpx_anti_alias = 1;
 double cv_frame[] = {0.1,0.8,0.1};
@@ -542,8 +548,8 @@ int main(int argn,char* argv[]){
         float limit_audio = (1-pilot_amp);
         float pilot_v = pilot_amp*int_value;
         for(int i = 0;i<half_b;i++){
-            float mono = *i_mb;
-            float stereo = *i_sb;
+            float monod= *i_mb;
+            float stereod = *i_sb;
             i_mb++;i_sb++;
 
            // Matrix_st_update(sreg, &stereo, &mono, int_value);
@@ -555,8 +561,28 @@ int main(int argn,char* argv[]){
             for(int i2 = 0;i2<4;i2++){
                 float w38 = synth_38[mpx_count];
                 float w19 = synth_19[mpx_count];
+                //oversampling mask, do not make square waves in the frequency domain
+
+                
+                float stereo=0.0;
+                float mono=0.0;
+                int loop=mask_index;
+                for(int i3=0;i3<4;i3++){
+                    stereo=stereo+samp_mask_s[loop]*samp_mask[i3];
+                    mono=mono+samp_mask_m[loop]*samp_mask[i3];
+                    loop++;
+                    if(loop>3)
+                      loop=0;
+                }
+                samp_mask_s[mask_index]=stereod;
+                samp_mask_m[mask_index]=monod;
+                mask_index++;
+                if(mask_index>3)
+                  mask_index=0;
 
                 float composite=(w38*stereo+mono);
+
+
 
 
 
