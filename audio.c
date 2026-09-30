@@ -568,14 +568,17 @@ int main(int argn,char* argv[]){
 
                   stmultiplier=stmultiplier-(1.0-(int_value/cmp_abs)); 
                   
-              }else if(stmultiplier<1.0 && cmp_abs < int_value){
+              }
+
+              float tbo=prev_comp*stmultiplier;
+
+	      if(stmultiplier<1.0 && cmp_abs < int_value){
                   stmultiplier=stmultiplier+composite_release;
                   if(stmultiplier>1.0){
                       stmultiplier=1.0;
                   }
               }
 
-              float tbo=prev_comp*stmultiplier;
               if(tbo>int_value){
                 tbo=int_value;
               }else if(tbo<nint_value){
