@@ -30,7 +30,7 @@ noise_th=26000
 [highpass]
 alpha=0.0017
 [bassboost]
-boost=0.88
+boost=0.90
 [eq]
 0=0.000001
 1=0.0000000000000001
