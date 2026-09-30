@@ -151,21 +151,21 @@ void Matrix_st_update(struct Matrix_st *matrix, float *LmR, float *LpR,float lim
     naiti_min_mults(matrix,&mogrlmr,&mogrlpr,&ilmr,&ilpr);
 
 
-    if(mogrlmr >= matrix->g_LmR){
+    if(mogrlmr > matrix->g_LmR){
         matrix->g_LmR = matrix->release + matrix->g_LmR;
         if(matrix->g_LmR > 1.0){
             matrix->g_LmR = 1.0;
         }
-    }else{
+    }else if (matrix->g_LmR > mogrlmr){
         matrix->g_LmR = matrix->g_LmR - ((matrix->g_LmR - mogrlmr)/((float)ilmr));
     }
 
-    if(mogrlpr >= matrix->g_LpR){
+    if(mogrlpr > matrix->g_LpR){
         matrix->g_LpR = matrix->release + matrix->g_LpR;
         if(matrix->g_LpR > 1.0){
             matrix->g_LpR = 1.0;
         }
-    }else{
+    }else if ( matrix->g_LpR > mogrlpr){
         matrix->g_LpR = matrix->g_LpR - ((matrix->g_LpR - mogrlpr)/((float)ilpr));
     }
 
