@@ -564,8 +564,8 @@ int main(int argn,char* argv[]){
                 //oversampling mask, do not make square waves in the frequency domain
 
                 
-                float stereo=0.0;
-                float mono=0.0;
+                float stereo=0.0f;
+                float mono=0.0f;
                 int loop=mask_index;
                 for(int i3=0;i3<4;i3++){
                     stereo=stereo+samp_mask_s[loop]*samp_mask[i3];
@@ -592,16 +592,23 @@ int main(int argn,char* argv[]){
               float cmp_abs=fabs(composite)*stmultiplier;
               if(cmp_abs>int_value){
 
-                  stmultiplier=stmultiplier-(1.0-(int_value/cmp_abs)); 
+                  stmultiplier=stmultiplier-(1.0f-(int_value/cmp_abs))*0.5f; 
                   
               }
 
               float tbo=prev_comp*stmultiplier;
+	      float val_abs=fabs(tbo);
+	      if(val_abs>int_value){
 
-	      if(stmultiplier<1.0 && cmp_abs < int_value){
+                  stmultiplier=stmultiplier-(1.0f-(int_value/val_abs)); 
+                  
+              }
+
+
+	      if(stmultiplier<1.0f && cmp_abs < int_value && val_abs < int_value){
                   stmultiplier=stmultiplier+composite_release;
-                  if(stmultiplier>1.0){
-                      stmultiplier=1.0;
+                  if(stmultiplier>1.0f){
+                      stmultiplier=1.0f;
                   }
               }
 
