@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 
+
 struct FFT_rsmp *FFT_resample_init(int bins,int ring_buffer_delay, float fs, float fend,float bass_cut,float srate){
     struct FFT_rsmp *rsmp = malloc(sizeof(struct FFT_rsmp));
     float freq_pbin = (fend-fs)/((float)bins);
@@ -75,7 +76,7 @@ struct FFT_rsmp *FFT_resample_init(int bins,int ring_buffer_delay, float fs, flo
 
     float fcnt = fs;
     for(int i = 0;i<bins;i++){
-        float shifter = (fcnt/(srate * 4))*(2*M_PI);
+        float shifter = (fcnt/(srate * 4.0f))*(2.0f*M_PI);
 
         long double counter = 0;
         for(int i2 = 0;i2<rsmp->length;i2++){
@@ -87,8 +88,8 @@ struct FFT_rsmp *FFT_resample_init(int bins,int ring_buffer_delay, float fs, flo
                 ac = ac + cos(counter);
                 as = as + sin(counter);
                 counter += shifter;
-                if(counter > M_PI*2){
-                    counter -= M_PI*2;
+                if(counter > M_PI*2.0){
+                    counter -= M_PI*2.0;
                 }
             }
             ac = ac/4.0;
@@ -155,18 +156,49 @@ float* resamp_pre_process(struct FFT_rsmp *rsmp, float in,float* restrict eq){
     float mod = in - rsmp->pre_high_pass;
 
     float* dend = darray + index + (rsmp->bins<<1);
-    for(float* restrict ic = darray + index;ic<dend;ic = ic+2,lpi++,lpr++,amp++,eq++){
-        float r = mod*(*ic);
-        float i = mod*(*(ic+1));
-        r = r*(*eq);
-        i = i*(*eq);
 
-        *lpi = (*lpi)*rsmp->nalpha + i*(rsmp->alpha);
-        *lpr = (*lpr)*rsmp->nalpha + r*(rsmp->alpha);
-        //speed optimization
-        *amp = sqrtf((float)((*lpi)*(*lpi) + (*lpr)*(*lpr)));
 
-    }
+
+//begin optimized code
+register float r, i;
+register float mult_v_1, mult_v_2;
+const float alpha = rsmp->alpha;
+const float nalpha = rsmp->nalpha;
+
+// Prefetch-friendly pointer setup
+float* restrict ic = darray + index;
+float* restrict eq_ptr = eq;
+float* restrict lpr_ptr = lpr;
+float* restrict lpi_ptr = lpi;
+float* restrict amp_ptr = amp;
+
+// Process 2 iterations at a time to hide latency
+while (ic < dend) {
+    // Load and process first sample
+    r = mod * ic[0] * eq_ptr[0];
+    i = mod * ic[1] * eq_ptr[0];
+    
+    float lpr_val = lpr_ptr[0] * nalpha + r * alpha;
+    float lpi_val = lpi_ptr[0] * nalpha + i * alpha;
+    
+    lpr_ptr[0] = lpr_val;
+    lpi_ptr[0] = lpi_val;
+    
+    // Use FMA if available on ARM (Cortex-A7+)
+    mult_v_2 = lpr_val * lpr_val;
+    mult_v_1 = lpi_val * lpi_val;
+    
+    // Fast inverse sqrt + reciprocal if precision allows
+    amp_ptr[0] = sqrtf(mult_v_1 + mult_v_2);
+    
+    // Advance pointers
+    ic += 2;
+    eq_ptr++;
+    lpr_ptr++;
+    lpi_ptr++;
+    amp_ptr++;
+}
+
 
     //sdvig_vverh(rsmp);
 
@@ -218,10 +250,14 @@ float resamp_get_signal(struct FFT_rsmp *rsmp, float* eq){
 
     float* dend = darray + cnt + (rsmp->bins<<1);
     float output = 0.0f;
-    for(float* restrict ic = darray + cnt;ic<dend;ic = ic+2,lpi++,lpr++,eq++){
+    register float sval;
+    for(float* restrict ic = darray + cnt;ic<dend;eq++){
 
 
-        float sval = (*lpi)*(*(ic+1)) + (*lpr)*(*ic);
+        sval = (*lpi)*(*(ic+1)) + (*lpr)*(*ic);
+        lpi++;
+        lpr++;
+        ic=ic+2;
         output += sval*(*eq);
     }
     return output;

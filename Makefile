@@ -1,4 +1,4 @@
-PI_FLAGS=-mfpu=vfp -mfloat-abi=hard
+PI_FLAGS=-mcpu=cortex-a53 -mfpu=neon-vfpv4 -mfloat-abi=hard
 PI3_FLAGS=
 OPT_FLAGS=-O3 -march=native -ffast-math -funroll-loops -ftree-vectorize -flto -fno-signed-zeros -fno-trapping-math
 FFT=./FFT/FFT.c

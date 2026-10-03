@@ -393,12 +393,17 @@ int main(int argn,char* argv[]){
     //gain controller
     struct Gain_Control *gc = gain_control_init(attack,release,target,noise_th);
     //anti aliasing to remove nasty waveforms
-    struct anti_aliasing* aa_m = anti_aliasing_init(cv_frame,3);
-    struct anti_aliasing* aa_s = anti_aliasing_init(cv_frame,3);
+    struct anti_aliasing* aa_m ;
+    struct anti_aliasing* aa_s ;
+
+    if(mpx_anti_alias){
+        aa_m=anti_aliasing_init(cv_frame,3);
+        aa_s=anti_aliasing_init(cv_frame,3);
+
+    }
 
     //stereo matrix regulator and composite limiter
 
-    struct Matrix_st* sreg = Matrix_st_init(composite_lookahead,composite_release);
 
 
 
@@ -520,18 +525,29 @@ int main(int argn,char* argv[]){
 
         for(int i = 0;i<half_b;i++){
 
-            float* amplitude = resamp_pre_process(rsmp, *i_mb,pre_eq);
-            suma = find_amp(amplitude,bins);
+            float* amplitude_mono = resamp_pre_process(rsmp, *i_mb,pre_eq);
+            //suma = find_amp(amplitude,bins);
 
-            adjust_eq(eq,amplitude,rsmp->rastoyanee,bins,limit_value,suma,eq_helper,l_release,harmonic_diff);
-            float val = resamp_get_signal(rsmp,eq);
+            //adjust_eq(eq,amplitude,rsmp->rastoyanee,bins,limit_value,suma,eq_helper,l_release,harmonic_diff);
+            //float val = resamp_get_signal(rsmp,eq);
 
 
-            amplitude = resamp_pre_process(rsmp_st, *i_sb,pre_eq);
-            suma = find_amp(amplitude,bins);
+            float* amplitude_stereo = resamp_pre_process(rsmp_st, *i_sb,pre_eq);
+            //add them together:
+            float* mono_ittr=amplitude_mono;
+            for(float* st_ittr=amplitude_stereo;st_ittr<amplitude_stereo+bins;st_ittr++){
 
-            adjust_eq(eq_s,amplitude,rsmp_st->rastoyanee,bins,limit_value,suma,eq_helper_s,l_release,harmonic_diff);
+                *st_ittr=*st_ittr+*mono_ittr;
+                mono_ittr++;
+            }
+            suma = find_amp(amplitude_stereo,bins);
+
+            adjust_eq(eq_s,amplitude_stereo,rsmp_st->rastoyanee,bins,limit_value*2.0f,suma,eq_helper_s,l_release,harmonic_diff);
             float stval = resamp_get_signal(rsmp_st,eq_s);
+
+
+            adjust_eq(eq,amplitude_stereo,rsmp->rastoyanee,bins,limit_value*2.0f,suma,eq_helper,l_release,harmonic_diff);
+            float val = resamp_get_signal(rsmp,eq);
 
             *i_mb = val*post_amp;
             *i_sb = stval*post_amp;
@@ -547,26 +563,25 @@ int main(int argn,char* argv[]){
 
         float limit_audio = (1-pilot_amp);
         float pilot_v = pilot_amp*int_value;
+        register float p_amp = (pilot_v);
         for(int i = 0;i<half_b;i++){
-            float monod= *i_mb;
-            float stereod = *i_sb;
+            register float monod= *i_mb;
+            register float stereod = *i_sb;
             i_mb++;i_sb++;
 
-           // Matrix_st_update(sreg, &stereo, &mono, int_value);
 
 
-            float p_amp = (pilot_v);
 
             //put 8 samples for 192 khz
             for(int i2 = 0;i2<4;i2++){
-                float w38 = synth_38[mpx_count];
-                float w19 = synth_19[mpx_count];
+                register float w38 = synth_38[mpx_count];
+                register float w19 = synth_19[mpx_count];
                 //oversampling mask, do not make square waves in the frequency domain
 
                 
-                float stereo=0.0f;
-                float mono=0.0f;
-                int loop=mask_index;
+                register float stereo=0.0f;
+                register float mono=0.0f;
+                register int loop=mask_index;
                 for(int i3=0;i3<4;i3++){
                     stereo=stereo+samp_mask_s[loop]*samp_mask[i3];
                     mono=mono+samp_mask_m[loop]*samp_mask[i3];
@@ -651,10 +666,11 @@ exit:
 
     free_gain_control(gc);
 
-    free_aliasing(aa_m);
-    free_aliasing(aa_s);
+    if(mpx_anti_alias){
+      free_aliasing(aa_m);
+      free_aliasing(aa_s);
+    }
 
-    Matrix_st_free(sreg);
 
     free(pre_eq);
     free(recbuff);
