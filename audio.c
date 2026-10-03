@@ -16,8 +16,8 @@
 char recording[32];
 char playback[32];
 
-const float int_value = 2147483600.0;
-const float nint_value = -2147483600.0;
+const float int_value = 2147400000.0;
+const float nint_value = -2147400000.0;
 //rates fixed to 48khz and 192 khz
 //
 //user settings:
@@ -505,7 +505,7 @@ int main(int argn,char* argv[]){
             l = ((l-hpv_l)*nbass_boost+hpv_l*bass_boost)*gc->gain;
             r = ((r-hpv_r)*nbass_boost+hpv_r*bass_boost)*gc->gain;
             float sum = l+r;
-            float diff = (l-r)*stereo_ratio;
+            float diff = (l-r);
             if(mpx_anti_alias){
                 sum = aliasing(aa_m,sum);
                 diff = aliasing(aa_s,diff);
@@ -566,7 +566,7 @@ int main(int argn,char* argv[]){
         register float p_amp = (pilot_v);
         for(int i = 0;i<half_b;i++){
             register float monod= *i_mb;
-            register float stereod = *i_sb;
+            register float stereod = (*i_sb)*stereo_ratio;
             i_mb++;i_sb++;
 
 
