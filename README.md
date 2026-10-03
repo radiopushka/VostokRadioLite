@@ -1,5 +1,5 @@
 # FM/AM Broadcast Processor and Audio Maximizer for Edge Devices, specifically for Raspberry Pi.
-## 86% single core utilization with the provided settings on the Raspberry Pi A+ Rev 1.1 with intense processing settings.
+## 86% single core utilization with the provided settings on the Raspberry Pi A+ Rev 1.1. Almost as loud as Orban, Optimod, etc...
 ## For use with the RPI DAC+ module https://www.raspberrypi.com/products/dac-plus/
 
 
