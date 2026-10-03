@@ -505,7 +505,7 @@ int main(int argn,char* argv[]){
             l = ((l-hpv_l)*nbass_boost+hpv_l*bass_boost)*gc->gain;
             r = ((r-hpv_r)*nbass_boost+hpv_r*bass_boost)*gc->gain;
             float sum = l+r;
-            float diff = l-r;
+            float diff = (l-r)*stereo_ratio;
             if(mpx_anti_alias){
                 sum = aliasing(aa_m,sum);
                 diff = aliasing(aa_s,diff);
