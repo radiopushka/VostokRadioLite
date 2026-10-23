@@ -11,9 +11,9 @@ c2_mpx=1
 antialias=1
 release=0.1
 lookahead=6
-a0=0.02
-a1=0.96
-a2=0.02
+a0=0.04
+a1=0.92
+a2=0.04
 [limiter]
 pre_amp=1
 lookahead=10
