@@ -7,9 +7,10 @@ CONFIG=./config_file/config.c
 COMP=./matrix_controller/algo.c
 ALSA=./alsa_pipe/main.c
 DEQ=./EQ_max_algorithm/maxim.c
+LOOKAHEAD=./lookahead/lookahead.c
 
 # lite version optimized and tested to run on the Raspberry Pi Zero W
 # CPU usage of 96-100% is normal
 
 all:
-	$(CC) audio.c $(FFT) $(COMP) $(DEQ) $(ALIAS) $(CONFIG) $(ALSA) $(PI3_FLAGS) $(OPT_FLAGS)  -lm -lasound -Wall -o vtkradio
+	$(CC) audio.c $(FFT) $(LOOKAHEAD) $(COMP) $(DEQ) $(ALIAS) $(CONFIG) $(ALSA) $(PI3_FLAGS) $(OPT_FLAGS)  -lm -lasound -Wall -o vtkradio

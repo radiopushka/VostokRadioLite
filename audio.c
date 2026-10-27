@@ -7,6 +7,7 @@
 #include <string.h>
 #include "./anti-alias/aliasing.h"
 #include "./matrix_controller/head.h"
+#include "./lookahead/lookahead.h"
 
 //the Raspberry Pi will have no cli control, purely config file based
 //CPU is limited
@@ -68,6 +69,10 @@ float DC_r=0;
 float aDC=0.0000001;
 float naDC=1.0-0.0000001;
 
+//38khz limit
+float stereo_limit=0.5*int_value;
+
+
 
 //AGC response
 //float agc_hpf=0.001;
@@ -77,7 +82,6 @@ float naDC=1.0-0.0000001;
 //simple stokemask
 float prev_comp=0.0;
 float stmultiplier=1.0;
-float pilot_lag=0.0;
 
 //sampling mask
 float samp_mask[]={0.1667f,0.3333f,0.3333f,0.1667f};
@@ -181,6 +185,12 @@ void setup_globals_from_config(char* file){
         composite_release = atof(cmprl_f);
         printf("composite release:%f\n",composite_release);
     }
+    char* stl_f = get_value_by(cfg,"MPX","stereo_limit");
+    if(stl_f){
+        stereo_limit = atof(stl_f);
+        printf("38khz preliminary limit:%f\n",stereo_limit);
+    }
+
 
 
 
@@ -396,6 +406,14 @@ int main(int argn,char* argv[]){
     struct anti_aliasing* aa_m ;
     struct anti_aliasing* aa_s ;
 
+    //lookahead limiters
+    // for mono+38khz
+    struct Lookahead* cmpl=init_Lookahead(composite_lookahead);
+   //the closest thing to stokkemask
+   //limit the amplitude of 38khz;
+    struct Lookahead* stokke=init_Lookahead(composite_lookahead);
+    struct Lookahead* mono_delay=init_Lookahead(composite_lookahead);
+
     if(mpx_anti_alias){
         aa_m=anti_aliasing_init(cv_frame,3);
         aa_s=anti_aliasing_init(cv_frame,3);
@@ -543,14 +561,17 @@ int main(int argn,char* argv[]){
             suma = find_amp(amplitude_stereo,bins);
 
             adjust_eq(eq_s,amplitude_stereo,rsmp_st->rastoyanee,bins,limit_value*2.0f,suma,eq_helper_s,l_release,harmonic_diff);
-            float stval = resamp_get_signal(rsmp_st,eq_s);
+            float stval = (resamp_get_signal(rsmp_st,eq_s)*post_amp)*stereo_ratio;
+            stval=run_Lookahead(stokke,stval,stereo_limit,composite_release);
+
 
 
             adjust_eq(eq,amplitude_stereo,rsmp->rastoyanee,bins,limit_value*2.0f,suma,eq_helper,l_release,harmonic_diff);
             float val = resamp_get_signal(rsmp,eq);
+            val=run_Lookahead_delay(mono_delay,val);
 
             *i_mb = val*post_amp;
-            *i_sb = stval*post_amp;
+            *i_sb = stval;
             i_mb++;
             i_sb++;
 
@@ -566,7 +587,7 @@ int main(int argn,char* argv[]){
         register float p_amp = (pilot_v);
         for(int i = 0;i<half_b;i++){
             register float monod= *i_mb;
-            register float stereod = (*i_sb)*stereo_ratio;
+            register float stereod = (*i_sb);
             i_mb++;i_sb++;
 
 
@@ -575,7 +596,11 @@ int main(int argn,char* argv[]){
             //put 8 samples for 192 khz
             for(int i2 = 0;i2<4;i2++){
                 register float w38 = synth_38[mpx_count];
-                register float w19 = synth_19[mpx_count];
+                //lag the 19khz to follow the composite clipper
+                int pilot_track=mpx_count-composite_lookahead;
+                if(pilot_track<0)
+                  pilot_track=mpx_b+pilot_track;
+                register float w19 = synth_19[pilot_track];
                 //oversampling mask, do not make square waves in the frequency domain
 
                 
@@ -600,42 +625,13 @@ int main(int argn,char* argv[]){
 
 
 
-
                 //hard_clip
 
 
-              float cmp_abs=fabs(composite)*stmultiplier;
-              if(cmp_abs>int_value){
-
-                  stmultiplier=stmultiplier-(1.0f-(int_value/cmp_abs))*0.5f; 
-                  
-              }
-
-              float tbo=prev_comp*stmultiplier;
-	      float val_abs=fabs(tbo);
-	      if(val_abs>int_value){
-
-                  stmultiplier=stmultiplier-(1.0f-(int_value/val_abs)); 
-                  
-              }
-
-
-	      if(stmultiplier<1.0f && cmp_abs < int_value && val_abs < int_value){
-                  stmultiplier=stmultiplier+composite_release;
-                  if(stmultiplier>1.0f){
-                      stmultiplier=1.0f;
-                  }
-              }
-
-              if(tbo>int_value){
-                tbo=int_value;
-              }else if(tbo<nint_value){
-                tbo=nint_value;
-              }
+                float pilot_lag=w19*p_amp;
+                composite=run_Lookahead(cmpl,composite,int_value,composite_release);
                 
-                prev_comp=composite;
-                float sample = pilot_lag+(tbo)*limit_audio;
-                pilot_lag=w19*p_amp;
+                float sample = pilot_lag+(composite)*limit_audio;
                 //float sample = stereo+mono;
                 if(c1_MPX)
                     *oi = sample;
@@ -671,6 +667,9 @@ exit:
       free_aliasing(aa_s);
     }
 
+    free_Lookahead(cmpl);
+    free_Lookahead(stokke);
+    free_Lookahead(mono_delay);
 
     free(pre_eq);
     free(recbuff);
