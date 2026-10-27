@@ -123,7 +123,7 @@ void gain_control(struct Gain_Control* gc, float levo, float pravo){
     float left = levo;
     float right = pravo;
     float stereo = left-right;
-    float sum = (fabs((left+right))+fabs(stereo));
+    float sum = (fabsf((left+right))+fabsf(stereo));
 
     /*float run_sum = 0;
     for(float* restrict i = gc->RMS_sum + (agc_lookahead-1);i>gc->RMS_sum;i--){
