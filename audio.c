@@ -71,6 +71,8 @@ float naDC=1.0-0.0000001;
 
 //38khz limit
 float stereo_limit=0.5*int_value;
+float stereo_release=0.1;
+int stereo_lookahead=3;
 
 
 
@@ -190,6 +192,18 @@ void setup_globals_from_config(char* file){
         stereo_limit = atof(stl_f);
         printf("38khz preliminary limit:%f\n",stereo_limit);
     }
+    char* sth_f = get_value_by(cfg,"MPX","stereo_lookahead");
+    if(sth_f){
+        stereo_lookahead = atoi(sth_f);
+        printf("38khz preliminary lookahead:%d\n",stereo_lookahead);
+    }
+   char* sthl_f = get_value_by(cfg,"MPX","stereo_release");
+    if(sthl_f){
+        stereo_release = atof(sthl_f);
+        printf("38khz preliminary release:%f\n",stereo_release);
+    }
+
+
 
 
 
@@ -411,8 +425,8 @@ int main(int argn,char* argv[]){
     struct Lookahead* cmpl=init_Lookahead(composite_lookahead);
    //the closest thing to stokkemask
    //limit the amplitude of 38khz;
-    struct Lookahead* stokke=init_Lookahead(composite_lookahead);
-    struct Lookahead* mono_delay=init_Lookahead(composite_lookahead);
+    struct Lookahead* stokke=init_Lookahead(stereo_lookahead);
+    struct Lookahead* mono_delay=init_Lookahead(stereo_lookahead);
 
     if(mpx_anti_alias){
         aa_m=anti_aliasing_init(cv_frame,3);
@@ -562,7 +576,7 @@ int main(int argn,char* argv[]){
 
             adjust_eq(eq_s,amplitude_stereo,rsmp_st->rastoyanee,bins,limit_value*2.0f,suma,eq_helper_s,l_release,harmonic_diff);
             float stval = (resamp_get_signal(rsmp_st,eq_s)*post_amp)*stereo_ratio;
-            stval=run_Lookahead(stokke,stval,stereo_limit,composite_release);
+            stval=run_Lookahead(stokke,stval,stereo_limit,stereo_release);
 
 
 
