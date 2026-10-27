@@ -5,8 +5,8 @@ discard_samples=0
 [MPX]
 pilot_amp=0.15
 stereo_ratio=0.7
-stereo_limit=1000000
-stereo_release=0.5
+stereo_limit=10000000000
+stereo_release=0.000001
 stereo_lookahead=5
 negmod=0
 c1_mpx=1
