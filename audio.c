@@ -538,12 +538,7 @@ int main(int argn,char* argv[]){
             r = ((r-hpv_r)*nbass_boost+hpv_r*bass_boost)*gc->gain;
             float sum = l+r;
             float diff = (l-r);
-            if(mpx_anti_alias){
-                sum = aliasing(aa_m,sum);
-                diff = aliasing(aa_s,diff);
-
-            }
-
+           
             *i_mb = sum;
             *i_sb = diff;
             i_mb++;
@@ -645,7 +640,13 @@ int main(int argn,char* argv[]){
                 float pilot_lag=w19*p_amp;
                 composite=run_Lookahead(cmpl,composite,int_value,composite_release);
                 
-                float sample = pilot_lag+(composite)*limit_audio;
+                float sample = (composite)*limit_audio;
+                sample=sample+pilot_lag;
+                if(mpx_anti_alias){
+                  sample = aliasing(aa_m,sample);
+                  //sample = aliasing(aa_s,sample);
+                }
+
                 //float sample = stereo+mono;
                 if(c1_MPX)
                     *oi = sample;
