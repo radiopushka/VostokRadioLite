@@ -93,6 +93,7 @@ float samp_mask_m[]={0.0f,0.0f,0.0f,0.0f};
 
 //anti aliasing for composite signals
 int mpx_anti_alias = 1;
+int composite_alg=0;
 double cv_frame[] = {0.1,0.8,0.1};
 
 float composite_release = 0.0001;
@@ -202,6 +203,18 @@ void setup_globals_from_config(char* file){
         stereo_release = atof(sthl_f);
         printf("38khz preliminary release:%f\n",stereo_release);
     }
+    char* calg_f = get_value_by(cfg,"MPX","composite_alg");
+    if(calg_f){
+        composite_alg = atof(calg_f);
+        if(composite_alg){
+
+          printf("composite clipping algorithm: L+R and L-R domain clipping, 38khz added later\n");
+        }else{
+
+          printf("composite clipping algorithm: clipping with 38khz\n");
+        }
+    }
+
 
 
 
@@ -427,6 +440,7 @@ int main(int argn,char* argv[]){
    //limit the amplitude of 38khz;
     struct Lookahead* stokke=init_Lookahead(stereo_lookahead);
     struct Lookahead* mono_delay=init_Lookahead(stereo_lookahead);
+    struct Lookahead* composite_delay=init_Lookahead(composite_lookahead);
 
     if(mpx_anti_alias){
         aa_m=anti_aliasing_init(cv_frame,3);
@@ -571,13 +585,16 @@ int main(int argn,char* argv[]){
 
             adjust_eq(eq_s,amplitude_stereo,rsmp_st->rastoyanee,bins,limit_value*2.0f,suma,eq_helper_s,l_release,harmonic_diff);
             float stval = (resamp_get_signal(rsmp_st,eq_s)*post_amp)*stereo_ratio;
-            stval=run_Lookahead(stokke,stval,stereo_limit,stereo_release);
+            if(stokke)
+              stval=run_Lookahead(stokke,stval,stereo_limit,stereo_release);
 
 
 
             adjust_eq(eq,amplitude_stereo,rsmp->rastoyanee,bins,limit_value*2.0f,suma,eq_helper,l_release,harmonic_diff);
             float val = resamp_get_signal(rsmp,eq);
-            val=run_Lookahead_delay(mono_delay,val);
+
+            if(mono_delay)
+              val=run_Lookahead_delay(mono_delay,val);
 
             *i_mb = val*post_amp;
             *i_sb = stval;
@@ -629,7 +646,7 @@ int main(int argn,char* argv[]){
                 if(mask_index>3)
                   mask_index=0;
 
-                float composite=(w38*stereo+mono);
+                float composite;
 
 
 
@@ -638,7 +655,26 @@ int main(int argn,char* argv[]){
 
 
                 float pilot_lag=w19*p_amp;
-                composite=run_Lookahead(cmpl,composite,int_value,composite_release);
+                //composite clip algorithm, set to 1 for ignoring 38khz
+                if(composite_alg){
+                  //stereo: the 38khz makes it spend the same amount of time in the negative domain as well as the positive
+                  //mono: can be both positive or negative, but we need to leave the same amount of headroom for the 38khz signal
+                  composite=(fabsf(stereo)+fabsf(mono));
+                  float composite_buffered=(w38*stereo+mono);
+                  float intermediate=run_Lookahead(cmpl,composite,int_value,composite_release);
+                  float gain_value=cmpl->gain;
+                  composite=run_Lookahead_delay(composite_delay,composite_buffered)*gain_value;
+                  //clip the output just in case
+                  if(composite > int_value)
+                    composite=int_value;
+                  if(composite < -int_value)
+                    composite=-int_value;
+
+
+                }else{
+                  composite=(w38*stereo+mono);
+                  composite=run_Lookahead(cmpl,composite,int_value,composite_release);
+                }
                 
                 float sample = (composite)*limit_audio;
                 sample=sample+pilot_lag;
@@ -683,8 +719,12 @@ exit:
     }
 
     free_Lookahead(cmpl);
-    free_Lookahead(stokke);
-    free_Lookahead(mono_delay);
+    free_Lookahead(composite_delay);
+
+    if(stokke)
+      free_Lookahead(stokke);
+    if(mono_delay)
+      free_Lookahead(mono_delay);
 
     free(pre_eq);
     free(recbuff);
