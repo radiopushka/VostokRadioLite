@@ -13,7 +13,7 @@ negmod=0
 c1_mpx=1
 c2_mpx=1
 antialias=0
-release=0.003
+release=0.006
 lookahead=40
 a0=0.04
 a1=0.92
@@ -29,7 +29,7 @@ basscut=0.0048
 [agc]
 attack=0.0007
 release=0.00009
-target=6000e+7
+target=5300e+7
 noise_th=4800000000
 [highpass]
 alpha=0.0017
