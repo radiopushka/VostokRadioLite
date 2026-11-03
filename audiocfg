@@ -29,7 +29,7 @@ basscut=0.0048
 [agc]
 attack=0.007
 release=0.0009
-target=4000e+7
+target=3000e+7
 noise_th=4800000000
 [highpass]
 alpha=0.0017
