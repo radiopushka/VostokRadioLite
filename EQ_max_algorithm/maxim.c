@@ -68,6 +68,7 @@ void adjust_eq(float *eq,float* fft_out,int* rastoyane, int bins, float limit,fl
             float mult = (*helper_ittr);
             float distance_x = (*r_ittr);
             float current = *eq_ittr;
+            float next = current;
             if(current==0.0)
               current=1.0;
             float target = (mult*limit);
@@ -75,19 +76,23 @@ void adjust_eq(float *eq,float* fft_out,int* rastoyane, int bins, float limit,fl
 
             if(eq_targ<current){
                 float t_gain = eq_targ/current;
-                float d_gain = t_gain-*eq_ittr;
+                float d_gain = t_gain-next;
 
-                *eq_ittr = *eq_ittr+(d_gain/distance_x);
+                next = next+(d_gain/distance_x);
             }else if (eq_targ > current){
 
                 if(current < 1.0)
                   current=1.0;
                 float t_gain = eq_targ/current;
-                *eq_ittr = *eq_ittr+(*release_ittr)*t_gain;
-                if(*eq_ittr > 1.0)
-                  *eq_ittr=1.0;
+                next = next+(*release_ittr);
+                if(next>t_gain){
+                  next=t_gain;
+                }
+                if(next > 1.0)
+                  next=1.0;
 
             }
+            *eq_ittr=next;
             release_ittr++;
 
         }
