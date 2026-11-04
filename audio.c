@@ -687,12 +687,12 @@ int main(int argn,char* argv[]){
                 if(c1_MPX)
                     *oi = sample;
                 else
-                    *oi = mono;
+                    *oi = 0;
                 oi++;
                 if(c2_MPX)
                     *oi = sample;
                 else
-                    *oi = mono;
+                    *oi = 0;
                 oi++;
                 mpx_count++;
                 if(mpx_count >= mpx_b)
