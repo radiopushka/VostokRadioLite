@@ -108,8 +108,9 @@ boost=0.4
 - **An FM transmitter that has a flat frequency response from 0Hz to 57khz (you can get away with poor bass response, but not recommended).**
 # Miscellaneous
 
-<img width="1919" height="1170" alt="2026-01-03_11-10" src="https://github.com/user-attachments/assets/0cb2f167-af1f-46ef-934a-ecf5c1270427" />
-<img width="1919" height="1173" alt="2026-01-03_11-10_1" src="https://github.com/user-attachments/assets/bbde4e22-ff32-4288-bc5a-d776d51e0d5e" />
+<img width="1919" height="1168" alt="2026-11-09_21-47" src="https://github.com/user-attachments/assets/d9846342-faba-4771-b892-647e62fb674f" />
+<img width="1919" height="1116" alt="2026-11-09_00-11" src="https://github.com/user-attachments/assets/12fd80c2-089a-46c9-bfd1-91bc4b9dd99a" />
+
 
 # Video
 https://youtu.be/JOmtsO-myVg?si=u7Xn-yfBd7oQSrS0
