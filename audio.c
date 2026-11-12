@@ -55,6 +55,11 @@ float nalpha;//10hz
 float hpv_l = 0;
 float hpv_r = 0;
 
+//baseband high pass filter
+float baseband_hpf = 0;
+int baseband_hpf_en=0;
+float baseband_alpha=0;
+
 //AGC response curve, roll off around 300Hz
 const float agc_alpha=300.0/48000.0;
 float nagc_alpha=1.0-agc_alpha;
@@ -214,6 +219,20 @@ void setup_globals_from_config(char* file){
           printf("composite clipping algorithm: clipping with 38khz\n");
         }
     }
+    char* baseband_hpf_en_f = get_value_by(cfg,"MPX","baseband_hpf_en");
+    if(baseband_hpf_en_f){
+        baseband_hpf_en=1;
+
+          printf("baseband_highpass\n");
+    }
+  char* baseband_hpf_en_freq = get_value_by(cfg,"MPX","baseband_hpf_freq");
+    if(baseband_hpf_en_freq){
+        float bs_f=atof(baseband_hpf_en_freq);
+        baseband_alpha=bs_f/192000.0;
+
+    }
+
+
 
 
 
@@ -681,6 +700,11 @@ int main(int argn,char* argv[]){
                 if(mpx_anti_alias){
                   sample = aliasing(aa_m,sample);
                   //sample = aliasing(aa_s,sample);
+                }
+
+                if(baseband_hpf_en){
+                  baseband_hpf=baseband_hpf*(1.0-baseband_alpha)+sample*baseband_alpha;
+                  sample=sample-baseband_hpf;
                 }
 
                 //float sample = stereo+mono;
