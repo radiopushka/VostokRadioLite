@@ -3,7 +3,7 @@ iface=net
 oface=hw:0,0
 discard_samples=0
 [MPX]
-pilot_amp=0.15
+pilot_amp=0.09
 stereo_ratio=0.7
 stereo_limit=1000000000000000
 stereo_release=0.00001
